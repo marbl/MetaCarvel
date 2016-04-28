@@ -192,12 +192,11 @@ double estimate_distance(double mean, int start1, int end1, int start2, int end2
 
 int main(int argc, char* argv[])
 {
-	cmdline ::parser pr;
+    cmdline ::parser pr;
     pr.add<string>("lib_info",'l',"file containing information about library",true,"");
     pr.add<string>("alignment_info",'a',"alignment of read to assembled contigs in bed format",true,"");
     pr.add<string>("contig_file",'d',"file containing length of contigs",true,"");
     pr.add<string>("output",'o',"output file",true,"");
-    pr.add<string>("coverage",'c',"contig coverage",true,"");
     pr.parse_check(argc,argv);
 
     //ifstream linkfile(getCharExpr(pr.get<string>("lib_info")));
