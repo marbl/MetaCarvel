@@ -1,0 +1,43 @@
+The main 4 files are lib_correct_bed.cpp, bundler.cpp, orientcontigs.cpp and vc_algo.cpp. The repeat detection is done in vc_algo.cpp. These are the instructions to read the code.
+
+1. lib_correct_bed.cpp
+usage: ./libcorrect --lib_info=string --alignment_info=string --contig_file=string --output=string [options] ... 
+options:
+  -l, --lib_info          file containing information about library (string)
+  -a, --alignment_info    alignment of read to assembled contigs in bed format (string)
+  -d, --contig_file       file containing length of contigs (string)
+  -o, --output            output file (string)
+  -?, --help              print this message
+
+2. bundler.cpp
+usage: ./bundler --contigs=string --output=string [options] ... 
+options:
+  -l, --contigs    contig links (string)
+  -o, --output     output file (string)
+  -c, --cutoff     number of mate pairs to support an edge (int [=1])
+  -?, --help       print this message
+
+3. orientocntigs.cpp
+usage: ./orientcontigs --bundled_graph=string --contig_length=string --output=string [options] ... 
+options:
+  -l, --bundled_graph    list of bundled links (string)
+  -c, --contig_length    contig lengths (string)
+      --length           sort contigs by size
+      --bsize            sort contigs by bundle size
+      --degree           sort contigs by degree
+  -o, --output           output file (string)
+  -?, --help             print this message
+
+
+There are 3 options for this depending on in what order you want to orient contigs. I choose longest contig first orientation.
+
+4. vc_algo.cpp
+There is binary for this file. You will need networKit package in order to build this.
+usage: ./vc_algo --oriented_graph=string --repeats_file=string [options] ... 
+options:
+  -g, --oriented_graph    give graph of oriented contigs (string)
+  -r, --repeats_file      file where to write repeated nodes (string)
+  -f, --epsilon           sampling parameter (double [=0.2])
+  -?, --help              print this message
+
+The input is in gml format. The outout will be just a list of contigs which are marked as repeats. 
