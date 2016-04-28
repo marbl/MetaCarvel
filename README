@@ -40,4 +40,14 @@ options:
   -f, --epsilon           sampling parameter (double [=0.2])
   -?, --help              print this message
 
-The input is in gml format. The outout will be just a list of contigs which are marked as repeats. 
+The input is in gml format. The outoaddut will be just a list of contigs which are marked as repeats.
+
+5. If the graph in multigraph, then vc_algo.cpp does not work. You can use this python script to mark repeats. You will need networkx package.
+usage: test_centrality.py [-h] [-g ORIENTED_GRAPH]
+
+optional arguments:
+  -h, --help            show this help message and exit
+  -g ORIENTED_GRAPH, --oriented_graph ORIENTED_GRAPH
+                        Oriented graph
+
+This will print repeats to stdout.                
