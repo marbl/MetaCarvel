@@ -282,15 +282,5 @@ int main(int argc, char* argv[])
 			}
 		}
 	}
-
-	ofstream cfile(getCharExpr(pr.get<string>("coverage")));
-	map<string,int> :: iterator it2;
-	for(it2 = contig2bases.begin(); it2 != contig2bases.end();++it2)
-	{
-		string contig = it2->first;
-		int contiglen = contig2length[contig];
-		double coverage = it2->second*1.0/contiglen;
-		cfile<<contig<<"\t"<<coverage<<endl;
-	}
 	return 0;
 }
