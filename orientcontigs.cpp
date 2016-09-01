@@ -218,6 +218,7 @@ map<int, bool> invalidlinks;
 map<string, int> contig2length;
 map<string, int> contigs2bundle;
 map<string, int> contig2degree;
+ofstream invalidfile("hmp/invalid_counts");
 
 int findorientation(string node_to_orient)
 {
@@ -238,22 +239,22 @@ int findorientation(string node_to_orient)
                     if(orientation == FOW)
                     {
                         if(link.getlinkorientation() == "EB")
-                            //curr_fow += link.get_bundle_size();
-                            curr_fow++;
+                            curr_fow += link.get_bundle_size();
+                            //curr_fow++;
 
                         if(link.getlinkorientation() == "BB")
-                            //curr_rev += link.get_bundle_size();
-                            curr_rev++;
+                            curr_rev += link.get_bundle_size();
+                            //curr_rev++;
                     }
                     if(orientation == REV)
                     {
                         if(link.getlinkorientation() == "EE")
-                            //curr_fow += link.get_bundle_size();
-                            curr_fow++;
+                            curr_fow += link.get_bundle_size();
+                            //curr_fow++;
 
                         if(link.getlinkorientation() == "BE")
-                            //curr_rev += link.get_bundle_size();
-                            curr_rev++;
+                            curr_rev += link.get_bundle_size();
+                            //curr_rev++;
                     }
                 }
             }
@@ -278,23 +279,23 @@ int findorientation(string node_to_orient)
                     {
                         //cerr<<link.getlinkorientation()<<endl;
                         if(link.getlinkorientation() == "EB")
-                            //curr_fow += link.get_bundle_size();
-                            curr_fow++;
+                            curr_fow += link.get_bundle_size();
+                            //curr_fow++;
 
                         if(link.getlinkorientation() == "EE")
-                            //curr_rev += link.get_bundle_size();
-                            curr_rev++;
+                            curr_rev += link.get_bundle_size();
+                            //curr_rev++;
                     }
 
                     if(orientation == REV)
                     {
                         if(link.getlinkorientation() == "BB")
-                            //curr_fow += link.get_bundle_size();
-                            curr_fow++;
+                            curr_fow += link.get_bundle_size();
+                            //curr_fow++;
                         
                         if(link.getlinkorientation() == "BE")
-                            //curr_rev += link.get_bundle_size();
-                            curr_rev++;
+                            curr_rev += link.get_bundle_size();
+                            //curr_rev++;
                         
                     }
                 }
@@ -302,7 +303,7 @@ int findorientation(string node_to_orient)
         }
         //cerr<<"currfow = "<<curr_fow<<endl;
         //cerr<<"currev  = "<<curr_rev<<endl; 
-        cout<<"FOW = "<<curr_fow<<"   REV = "<<curr_rev<<endl;
+        //cout<<"FOW = "<<curr_fow<<"   REV = "<<curr_rev<<endl;
 
         if(curr_fow >= curr_rev)
         {
@@ -320,7 +321,8 @@ int findorientation(string node_to_orient)
 
 void invalidatelinks(string v,int orientation)
 { 
-    //cerr<<"invalidating..."<<v<<endl;
+    int count = 0;
+    cerr<<"invalidating..."<<v<<endl;
     if(adjacency.find(v) != adjacency.end())
     {
         vector<Link> neighbors = adjacency[v];
@@ -337,6 +339,7 @@ void invalidatelinks(string v,int orientation)
                     if(link.getlinkorientation() != "EB")
                     {
                         invalidlinks[link.getid()] = true;
+                        count += link.get_bundle_size();
                         //cerr<<link.getfirstcontig()<<"\t"<<link.getfirstorietation()<<"\t"<<link.getsecondcontig()<<"\t"<<link.getsecondorientation()<<endl;
                     }
                 }
@@ -345,6 +348,7 @@ void invalidatelinks(string v,int orientation)
                     if(link.getlinkorientation() != "BE")
                     {
                         invalidlinks[link.getid()] = true;
+                        count += link.get_bundle_size();
                         //cerr<<link.getfirstcontig()<<"\t"<<link.getfirstorietation()<<"\t"<<link.getsecondcontig()<<"\t"<<link.getsecondorientation()<<endl;
                     }
                 }
@@ -353,6 +357,7 @@ void invalidatelinks(string v,int orientation)
                     if(link.getlinkorientation() != "EE")
                     {
                         invalidlinks[link.getid()] = true;
+                        count += link.get_bundle_size();
                         //cerr<<link.getfirstcontig()<<"\t"<<link.getfirstorietation()<<"\t"<<link.getsecondcontig()<<"\t"<<link.getsecondorientation()<<endl;
                     }
                 }
@@ -361,6 +366,7 @@ void invalidatelinks(string v,int orientation)
                     if(link.getlinkorientation() != "BB")
                     {
                         invalidlinks[link.getid()] = true;
+                        count += link.get_bundle_size();
                         //cerr<<link.getfirstcontig()<<"\t"<<link.getfirstorietation()<<"\t"<<link.getsecondcontig()<<"\t"<<link.getsecondorientation()<<endl;
                     }
                 }
@@ -384,6 +390,7 @@ void invalidatelinks(string v,int orientation)
                     if(link.getlinkorientation() != "EB")
                     {
                         invalidlinks[link.getid()] = true;
+                        count += link.get_bundle_size();
                         //cout<<link.getlinkorientation()<<"\t"<<"BE"<<endl;
                         //cerr<<link.getfirstcontig()<<"\t"<<link.getfirstorietation()<<"\t"<<link.getsecondcontig()<<"\t"<<link.getsecondorientation()<<endl;
                     }
@@ -393,6 +400,7 @@ void invalidatelinks(string v,int orientation)
                     if(link.getlinkorientation() != "BE")
                     {
                         invalidlinks[link.getid()] = true;
+                        count += link.get_bundle_size();
                         //cerr<<link.getfirstcontig()<<"\t"<<link.getfirstorietation()<<"\t"<<link.getsecondcontig()<<"\t"<<link.getsecondorientation()<<endl;
                     }
                 }
@@ -401,6 +409,7 @@ void invalidatelinks(string v,int orientation)
                     if(link.getlinkorientation() != "EE")
                     {
                         invalidlinks[link.getid()] = true;
+                        count += link.get_bundle_size();
                         //cout<<orientation<<"\t"<<neighorientation<<endl;
                         //cerr<<link.getfirstcontig()<<"\t"<<link.getfirstorietation()<<"\t"<<link.getsecondcontig()<<"\t"<<link.getsecondorientation()<<endl;
                     }
@@ -410,6 +419,7 @@ void invalidatelinks(string v,int orientation)
                     if(link.getlinkorientation() != "BB")
                     {
                         invalidlinks[link.getid()] = true;
+                        count += link.get_bundle_size();
                         //cout<<orientation<<"\t"<<neighorientation<<endl;
                         //cerr<<link.getfirstcontig()<<"\t"<<link.getfirstorietation()<<"\t"<<link.getsecondcontig()<<"\t"<<link.getsecondorientation()<<endl;
                     }
@@ -417,6 +427,7 @@ void invalidatelinks(string v,int orientation)
             }
         }
     }
+    invalidfile<<v<<"\t"<<count<<endl;
 }
 
 int get_degree(string start)
@@ -728,11 +739,12 @@ int main(int argc, char* argv[])
     while(nd != "done")
     {        
         //cout<<nd<<endl;
-        //ctg2orient[nd] = FOW;
+        ctg2orient[nd] = FOW;
         //cout<<nd<<"\t"<<ctg2orient[nd]<<endl;
         bfs(nd,strategy);
         if(strategy == "bsize" || strategy == "length")
         {
+            //cout<<nd<<endl;
             nd =get_unoriented_node_by_length();
         }
         else
@@ -768,6 +780,7 @@ int main(int argc, char* argv[])
     	ofile<< "   id "<<nodecounter<<endl;
     	ofile<< "   label \"" <<contig<<"\""<<endl;
     	ofile<< "   orientation \""<<o<<"\""<<endl;
+        ofile<< "   length \""<<contig2length[contig]<<"\""<<endl;
         string ans = "";
     	ofile<< "  ]"<<endl;
     	contig2node[contig] = nodecounter;
