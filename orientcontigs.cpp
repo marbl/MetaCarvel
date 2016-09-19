@@ -813,6 +813,7 @@ int main(int argc, char* argv[])
             */
         	ofile<<"   mean \""<<link.getmean()<<"\""<<endl;
         	ofile<<"   stdev "<<link.getstdev()<<endl;
+            ofile<<"   bsize "<<link.bundle_size<<endl;
         	ofile<<"  ]"<<endl;
         }
     }
