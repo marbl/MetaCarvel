@@ -1,3 +1,4 @@
+Bambus 3 - Scaffolder for metagenomes
 The main 4 files are lib_correct_bed.cpp, bundler.cpp, orientcontigs.cpp and vc_algo.cpp. The repeat detection is done in vc_algo.cpp. These are the instructions to read the code.
 
 1. lib_correct_bed.cpp
