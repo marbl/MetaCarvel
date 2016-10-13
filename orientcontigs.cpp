@@ -617,7 +617,8 @@ int main(int argc, char* argv[])
     pr.add("length",'\0',"sort contigs by size");
     pr.add("bsize",'\0',"sort contigs by bundle size");
     pr.add("degree",'\0',"sort contigs by degree");
-    pr.add<string>("output",'o',"output file",true,"");
+    pr.add<string>("output",'o',"output graph file",true,"");
+    pr.add<string>("output_links",'p',"file where links are written as TSV format",true,"");
     pr.parse_check(argc,argv);
     map<string,double> contig2coverage;
     get_contig_length(pr.get<string>("contig_length"));
@@ -635,6 +636,7 @@ int main(int argc, char* argv[])
     }*/
     ifstream linkfile(getCharExpr(pr.get<string>("bundled_graph")));
     ofstream ofile(getCharExpr(pr.get<string>("output")));
+    ofstream tablinks(getCharExpr(pr.get<string>("output_links")));
     int linkid = 0;
     map<int, Link> linkmap;
     while(getline(linkfile,line))
@@ -799,7 +801,7 @@ int main(int argc, char* argv[])
         	ofile<<"  edge ["<<endl;
         	ofile<<"   source "<<contig2node[link.getfirstcontig()]<<endl;
         	ofile<<"   target "<<contig2node[link.getsecondcontig()]<<endl;
-        	ofile<<"   orientation "<<link.getlinkorientation()<<endl;
+        	ofile<<"   orientation \""<<link.getlinkorientation()<<"\""<<endl;
 		/*
             string x = link.getfirstcontig() +"$"+link.getsecondcontig();
             if (edge2cov.find(x) == edge2cov.end())
@@ -815,6 +817,7 @@ int main(int argc, char* argv[])
         	ofile<<"   stdev "<<link.getstdev()<<endl;
             ofile<<"   bsize "<<link.bundle_size<<endl;
         	ofile<<"  ]"<<endl;
+            tablinks<<link.getfirstcontig()<<"\t"<<link.getlinkorientation()[0]<<"\t"<<link.getsecondcontig()<<"\t"<<link.getlinkorientation()[1]<<"\t"<<link.getmean()<<"\t"<<link.getstdev()<<"\t"<<link.bundle_size<<endl;
         }
     }
     ofile<<"]"<<endl;
