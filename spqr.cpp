@@ -24,6 +24,7 @@ using namespace ogdf;
 unordered_map<node,string> id2contig;
 unordered_map<string,node> revid2contig;
 unordered_map<int,string> intid2contig;
+vector<pair<int,int> > pairs;
 class Link
 {
 public:
@@ -195,11 +196,64 @@ void write_dot(Graph G, map<int,int> sk2origin, string file,Skeleton &sk)
 	of<<"}";
 }
 
-vector<pair<int,int> > findTwoVertexCuts(Bicomponent &bicomp, Skeleton &sk, unordered_map<int,int> sk2orig, std::string type) 
+void getCutVertexPair(const GraphCopy &GC, node bcTreeNode,BCTree &bc, int CC, \
+                      Bicomponent &bicomp, \
+                      int maxBNodeSize=30, int minBNodeSize=3) {
+  
+  node n1,n2;
+  edge in1,in2,out1,out2;
+  if (bc.typeOfBNode(bcTreeNode) != 0) // Check if we're dealing with B-node
+    return ;
+  
+  Graph bcT = bc.bcTree();              // the BT-Tree
+  List<edge> incoming, outgoing;        // Edge lists
+  bcT.inEdges(bcTreeNode, incoming);    // Get all incoming edges into BCTreeNode
+  bcT.outEdges(bcTreeNode, outgoing);   // Get all outgoing edges out of BCTreeNode
+    
+  if (incoming.size() + outgoing.size() == 2) {
+    if (incoming.size() == 2){
+      in1 = incoming.front();
+      in2 = incoming.back();
+      n1  = bc.cutVertex(in1->source(),in1->source());
+      n2  = bc.cutVertex(in2->source(),in2->source());
+    }
+    else if (outgoing.size() == 2) {
+      out1 = outgoing.front();
+      out2 = outgoing.back();
+      n1 = bc.cutVertex(out1->target(),out1->target());
+      n2 = bc.cutVertex(out1->target(),out1->target());
+    }
+    else {
+      out1 = outgoing.front();
+      in1  = incoming.front();
+      n1 = bc.cutVertex(out1->target(),out1->target());
+      n2 = bc.cutVertex(in1->source(),in1->source());
+    }
+        
+    if (n1 && n2) {
+      n1 =  bc.original(GC.original(n1));
+      n2 =  bc.original(GC.original(n2));
+     pairs.push_back(make_pair(n1->index(), n2->index()));
+    }
+  }
+}
+
+struct pair_hash {
+    template <class T1, class T2>
+    std::size_t operator () (const std::pair<T1,T2> &p) const {
+        auto h1 = std::hash<T1>{}(p.first);
+        auto h2 = std::hash<T2>{}(p.second);
+
+        // Mainly for demonstration purposes, i.e. works but is overly simple
+        // In the real world, use sth. like boost.hash_combine
+        return h1 ^ h2;  
+    }
+};
+
+void findTwoVertexCuts(Bicomponent &bicomp, Skeleton &sk, unordered_map<int,int> sk2orig, std::string type) 
 {
 	const Graph &G = sk.getGraph();
 	int virtualCount;
-	vector<pair<int,int> > pairs;
 	edge e;
 	
 	node n1;
@@ -239,20 +293,23 @@ vector<pair<int,int> > findTwoVertexCuts(Bicomponent &bicomp, Skeleton &sk, unor
 	{
 		//cout<<"S"<<endl;
 		// A virtual edge in an S node represents a 2-vertex cuts
+		unordered_map<pair<int,int>, bool, pair_hash > adjacent;
 		forall_edges(e,G) {
 			if (sk.isVirtual(e)) 
 				pairs.push_back(make_pair(sk2orig[e->source()->index()], sk2orig[e->target()->index()]));
-			
+			else
+				adjacent[make_pair(sk2orig[e->source()->index()], sk2orig[e->target()->index()])] = true;
+				adjacent[make_pair(sk2orig[e->target()->index()], sk2orig[e->source()->index()])] = true;
 		} //forall edges
 		
+
 		// All non-adjacent nodes in an S-node are cut-vertices
 		for (int i = 0; i < nrNodes-1; i++)
 				for(int j = i+1; j < nrNodes; j++)
-						if (find(pairs.begin(),pairs.end(),make_pair(allnodes[i], allnodes[j])) == pairs.end() && find(pairs.begin(),pairs.end(),make_pair(allnodes[j], allnodes[i])) == pairs.end())
+						if(adjacent.find(make_pair(allnodes[i], allnodes[j])) == adjacent.end() or adjacent.find(make_pair(allnodes[j], allnodes[i])) == adjacent.end())
 							pairs.push_back(make_pair(allnodes[i], allnodes[j]));
 	}//else if
 	//cout<<pairs.size()<<endl;
-	return pairs;
 } //getTwoVertexCuts
 
 std::set<int> getBiComponent(GraphCopy *GC, BCTree *p_bct, node bcTreeNode) 
@@ -452,7 +509,7 @@ int main(int argc, char* argv[])
                             cerr << "-> Graph is not loop free" << endl;
            	
 		        }
-
+		        getCutVertexPair(GC,bcTreeNode,bc,j,bicomp);
 				StaticSPQRTree spqr(GC);
 				//cout<<"SPQR generated"<<endl;
 				const Graph &T = spqr.tree();
@@ -477,65 +534,19 @@ int main(int argc, char* argv[])
 									
 					string type = getTypeString(n, spqr);	
 					//Get 2-vertex cuts
-					vector<pair<int, int> > pairs = findTwoVertexCuts(bicomp,spqr.skeleton(n) , sk2orig, type);
-					for(int i = 0;i < pairs.size();i++)
-					{
-						ofile<<intid2contig[pairs[i].first]<<"\t"<<intid2contig[pairs[i].second];
-						for(set<int> :: iterator it = memberNodes.begin(); it != memberNodes.end();++it)
-						{
-							ofile<<"\t"<<intid2contig[*it];
-						}
-						ofile<<endl;
-					}
+					findTwoVertexCuts(bicomp,spqr.skeleton(n) , sk2orig, type);
+					
 				}
-				// forall_nodes(n,T)
-				// {
-					
-				// 	int degree = n->degree();
-				// 	const Graph &Gn = spqr.skeleton(n).getGraph();
-				// 	//only if current node is leaf node, add it in new graph
-					
-					
-				// 	vector<node> nodes_in_skel;
-				// 	node Nn;
-				// 	forall_nodes(Nn,Gn)
-				// 	{	
-				// 		node cn = original(Nn,bc,GC,spqr.skeleton(n));
-				// 		sk2origin[Nn->index()] = cn->index();
-				// 		if(degree == 1)
-				// 			nodes_in_skel.push_back(cn);
-				// 	}
-				// 	nodemapping[new_node_index] = nodes_in_skel;
-				// 	write_dot(Gn,sk2origin,"tmp/comp"+to_string(c)+".dot",spqr.skeleton(n));
-				// 	if(degree == 1)
-				// 	{
-				// 		G_new.newNode(new_node_index);
-				// 		new_node_index++;
-				// 	}
-				// 	c++;
-				// 	//retrieve skeleton of nodes in SPQR tree
-				// 	/*
-				// 	const Graph &Gn = spqr.skeleton(n).getGraph();
-				// 	node Nn;
-				// 	forall_nodes(Nn,Gn)
-				// 	{	
-				// 		node cn = original(Nn,bc,GC,spqr.skeleton(n));
-				// 		sk2origin[Nn->index()] = cn->index();
-				// 	}
-				// 	//write_dot(Gn,sk2origin,"tmp/comp"+to_string(c)+".dot",spqr.skeleton(n));
-				// 	//find mapping of these nodes to original nodes in graph meaning : sk2origin[skeleton_node] = original_node
-				// 	//c++;	
-				// 	/*
-				// 	map<int,int> :: iterator it;
-				// 	for(it = sk2origin.begin();it != sk2origin.end();++it)
-				// 	{
-				// 		cout<<it->first<<"\t"<<it->second<<endl;
-				// 	}
-				// 	cout<<"=========="<<endl;
-				// 	c = "2";
-				// 	*/
-				// }
-
+				for(int i = 0;i < pairs.size();i++)
+				{
+					ofile<<intid2contig[pairs[i].first]<<"\t"<<intid2contig[pairs[i].second];
+					for(set<int> :: iterator it = memberNodes.begin(); it != memberNodes.end();++it)
+					{
+						ofile<<"\t"<<intid2contig[*it];
+					}
+					ofile<<endl;
+				}
+				pairs.clear();
 			}
 		}	
 	}
