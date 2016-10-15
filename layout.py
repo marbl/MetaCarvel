@@ -8,12 +8,14 @@ This method validates if separation pair given by SPQR tree is valid source-sink
 The algorithm is same as the one in Marygold
 '''
 
-def test_pair(G,source,sink):
+def test_pair(G,source,sink,members):
 
 	if G.has_edge(source,sink) or G.has_edge(sink,source):
 		return False
 
 	visited = {}
+	visited_nodes = {}
+	visited[source] = True
 	Q = deque()
 	at_sink = False
 	for edge in G.out_edges(source):
@@ -26,6 +28,7 @@ def test_pair(G,source,sink):
 		curr_edge = Q.pop()
 		u = curr_edge[0]
 		v = curr_edge[1]
+		visited[v] = True
 		if v == sink:
 			at_sink = True
 			continue
@@ -42,6 +45,10 @@ def test_pair(G,source,sink):
 				if edge not in visited:
 					Q.appendleft(edge)
 					visited[edge] = True
+	
+	for node in members:
+		if node not in visited:
+			return False
 	if at_sink:
 		return True
 	else:
@@ -110,12 +117,12 @@ def transitive_reduction(G):
 
 def main():
 
-	G = nx.read_gml("shakya_oriented.gml")
+	G = nx.read_gml("small.gml")
 	#G = nx.read_gml("small.gml")
 	nx.write_gexf(G,'original.gexf')
 	pairmap = {}
 
-	with open('shakya_bicomp','r') as f:
+	with open('smallseppairs','r') as f:
 		for line in f:
 			attrs = line.split()
 			if attrs[0] <= attrs[1]:
@@ -137,14 +144,16 @@ def main():
 	all_bubble_paths = {} #stores all heaviest paths in bubble
 	source_and_sinks = {}
 	'''
-	Here, first validate each source sink pair.
+	Here, first validate each source sink pair. To do this, sort them with largest number of nodes in the
+	biconnected component.
 	'''
-
-	for key in pairmap:
+	pair_list = sorted(pairmap, key=lambda k: len(pairmap[k]), reverse=True)
+	print pair_list
+	for key in pair_list:
 		contigs = key.split('$')
 		if contigs[0] not in validated and contigs[1] not in validated:
-			if test_pair(G,contigs[0],contigs[1]):
-				#print 'validated'
+			if test_pair(G,contigs[0],contigs[1], pairmap[key]):
+				print 'validated'
 				cnt += 1
 				valid_source_sink.append((contigs[0],contigs[1]))
 				validated[contigs[0]] = 1
@@ -174,8 +183,8 @@ def main():
 				print len(subg1.nodes())
 				all_bubble_paths[key] = paths
 				#print "============================"
-			# else:
-			# 	print "invalid"
+			else:
+				print "invalid"
 	#print cnt
 
 	'''
