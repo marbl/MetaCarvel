@@ -8,14 +8,16 @@ This method validates if separation pair given by SPQR tree is valid source-sink
 The algorithm is same as the one in Marygold
 '''
 
-def test_pair(G,source,sink,members):
+def test_pair(G,source,sink):
 
 	if G.has_edge(source,sink) or G.has_edge(sink,source):
-		return False
+		return []
 
 	visited = {}
 	visited_nodes = {}
-	visited[source] = True
+	# visited_nodes = set()
+	# visited_nodes.add(source)
+	visited_nodes[source] = True
 	Q = deque()
 	at_sink = False
 	for edge in G.out_edges(source):
@@ -28,7 +30,7 @@ def test_pair(G,source,sink,members):
 		curr_edge = Q.pop()
 		u = curr_edge[0]
 		v = curr_edge[1]
-		visited[v] = True
+		visited_nodes[v] = True
 		if v == sink:
 			at_sink = True
 			continue
@@ -46,13 +48,12 @@ def test_pair(G,source,sink,members):
 					Q.appendleft(edge)
 					visited[edge] = True
 	
-	for node in members:
-		if node not in visited:
-			return False
+	
+	
 	if at_sink:
-		return True
+		return visited_nodes.keys()
 	else:
-		return False
+		return []
 
 
 '''
@@ -152,7 +153,8 @@ def main():
 	for key in pair_list:
 		contigs = key.split('$')
 		if contigs[0] not in validated and contigs[1] not in validated:
-			if test_pair(G,contigs[0],contigs[1], pairmap[key]):
+			res = test_pair(G,contigs[0],contigs[1])
+			if len(res) != 0:
 				print 'validated'
 				cnt += 1
 				valid_source_sink.append((contigs[0],contigs[1]))
@@ -161,7 +163,7 @@ def main():
 				source_and_sinks[contigs[1]] = 1
 				validated[contigs[1]] = 1
 				comp = []
-				for contig in pairmap[key]:
+				for contig in res:
 					in_bubble[contig] = 1
 					validated[contig] = 1
 					comp.append(contig)
@@ -178,14 +180,14 @@ def main():
 				'''
 				subg1 = subg.copy()
 				paths = get_all_shortest_paths(subg,contigs[0],contigs[1])
-				print len(paths)
-				print len(paths[0])
-				print len(subg1.nodes())
+				# print len(paths)
+				# print len(paths[0])
+				# print len(subg1.nodes())
 				all_bubble_paths[key] = paths
 				#print "============================"
-			else:
-				print "invalid"
-	#print cnt
+			# else:
+				# print "invalid"
+	print cnt
 
 	'''
 	Here, find now the new graph by collapsing bubbles
@@ -248,8 +250,6 @@ def main():
 		except:
 			node[1]['type'] = 'contig'
 
-	print len(G_new.nodes(data=True))		
-	print len(G_new.edges(data=True))
 	'''
 	Output the simplified Graph
 	'''
