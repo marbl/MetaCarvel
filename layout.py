@@ -231,6 +231,17 @@ def main():
 					colmap[edge[0]] = 'black'
 					colmap[edge[1]] = 'red'
 
+	for node in source_and_sinks:
+		for node1 in source_and_sinks:
+			if G.has_edge(node,node1):
+				G_new.add_edge(node,node1)
+				colmap[node] = 'red'
+				colmap[node1] = 'red'
+			if G.has_edge(node1,node):
+				G_new.add_edge(node1,node)
+				colmap[node] = 'red'
+				colmap[node1] = 'red'
+
 	for node in G_new.nodes(data=True):
 		try:
 			node[1]['type'] = typemap[node[0]]
@@ -242,15 +253,15 @@ def main():
 	'''
 	Output the simplified Graph
 	'''
-	# for node in G_new.nodes(data=True):
-	# 	#print node
-	# 	m = node[1]
-	# 	node[1]['color'] = colmap[node[0]]
-	# #nx.set_node_attribute(G_new,'color',colmap)
-	# print len(G_new.nodes())
-	# print len(G_new.edges())
+	for node in G_new.nodes(data=True):
+		#print node
+		m = node[1]
+		node[1]['color'] = colmap[node[0]]
+	#nx.set_node_attribute(G_new,'color',colmap)
+	print len(G_new.nodes())
+	print len(G_new.edges())
 	nx.write_gexf(G_new,'simplified.gexf')
-	# write_dot(G_new,'simplified.dot')
+	write_dot(G_new,'simplified.dot')
 
 	'''
 	Make the new simplified graph undirected
