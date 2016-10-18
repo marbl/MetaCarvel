@@ -253,17 +253,11 @@ def main():
 		
 		if res:
 			cnt += 1
-			validated[contigs[0]] = 1
+			#validated[contigs[0]] = 1
 			source_and_sinks[contigs[0]] = 1
 			source_and_sinks[contigs[1]] = 1
-			validated[contigs[1]] = 1
-			comp = []
-			for contig in pairmap[key]:
-				in_bubble[contig] = 1
-				validated[contig] = 1
-				comp.append(contig)
-
-			subg = G.subgraph(comp)
+			#validated[contigs[1]] = 1
+			#subg = G.subgraph(comp)
 			valid_comps[comp_id] = 1
 			
 
@@ -273,6 +267,7 @@ def main():
 	source_sink_to_comp = {}
 	print len(valid_comps)
 	cnt = 0
+	bubble_to_graph = {}
 	for key in valid_comps:
 		pairs = comp_to_pair[key]
 		#print "Length of pairs = " + str(len(pairs))
@@ -294,14 +289,15 @@ def main():
 					max_pair = pair
 
 			if max_pair != -1:
-				print "max_path = " + str(max_path)
-				print "max_pair = " + str(max_pair)
+				# print "max_path = " + str(max_path)
+				# print "max_pair = " + str(max_pair)
 				cnt += 1
+				bubble_to_graph[key] = subg
 				valid_source_sink.append(max_pair)
-				source[max_pair[0]] = 1
-				sink[max_pair[1]] = 1
-				source_sink_to_comp[max_pair[0]] = key
-				source_sink_to_comp[max_pair[1]] = key
+				source[max_pair.split('$')[0]] = 1
+				sink[max_pair.split('$')[1]] = 1
+				source_sink_to_comp[max_pair.split('$')[0]] = key
+				source_sink_to_comp[max_pair.split('$')[1]] = key
 				for contig in id_to_comp[key]:
 					in_bubble[contig] = 1
 					validated[contig] = 1
@@ -312,13 +308,24 @@ def main():
 
 	'''
 	Here, find now the new graph by collapsing bubbles
+	TODO: Preserve node and edge attributes from the original non-collapsed graph
 	'''
-
+	#node to info map
+	node_info = {}
+	for node in G.nodes(data=True):
+		node_info[node[0]] = node[1] 
 	G_new = nx.DiGraph()
-	colmap = {}
-	typemap = {}
+
+	# print source
+	# print sink
+	# for each in source:
+	# 	print len(G.in_edges(each))
+
+	# for each in sink:
+	# 	print len(G.out_edges(each))
+
 	for key in valid_comps:
-		G.add_node(str(key))
+		G_new.add_node(str(key))
 	for u,v,data in G.edges(data=True):
 		if u not in validated and v not in validated:
 			G_new.add_edge(u,v,data)
@@ -326,13 +333,24 @@ def main():
 	for node in G.nodes():
 		for each in source:
 			if G.has_edge(node,each):
-				G_new.add_edge(node,source_sink_to_comp[each])
+				#print 'here'
+				data = G.get_edge_data(node,each)
+				G_new.add_edge(node,source_sink_to_comp[each],data)
 
 		for each in sink:
 			if G.has_edge(each,node):
-				G_new.add_edge(source_sink_to_comp[each],node)
+				#print 'here'
+				data = G.get_edge_data(each,node)
+				G_new.add_edge(source_sink_to_comp[each],node,data)
 
-
+	for node in G_new.nodes(data=True):
+		if node[0] in node_info:
+			info = node_info[node[0]]
+			for each in info:
+				node[1][each] = info[each]
+		else:
+			node[1]['type'] = 'bubble'
+			#node[1]['size'] = len(bubble_to_graph[node[0]].nodes())
 	'''
 	Output the simplified Graph
 	'''
@@ -343,22 +361,16 @@ def main():
 	#nx.set_node_attribute(G_new,'color',colmap)
 	print len(G_new.nodes())
 	print len(G_new.edges())
-	nx.write_gexf(G_new,'simplified.gexf')
+	#nx.write_gexf(G_new,'simplified.gexf')
 	write_dot(G_new,'simplified.dot')
+	nx.write_gml(G_new,'simplified.gml')
 
 	'''
-	Make the new simplified graph undirected
+	In this simplified, for each weakly connected component, find out the heaviest linear path. If path
+	goes through the bubble, choose the heaviest path in the bubble and continue
 	'''
-	#G_new = G_new.to_undirected()
 
-	# G_reduced = nx.DiGraph()
-
-	# for subg in nx.weakly_connected_component_subgraphs(G_new):
-	# 	subg = transitive_reduction(subg)
-	# 	for u,v in subg.edges():
-	# 		G_reduced.add_edge(u,v)
-
-	# nx.write_gexf(G_reduced,'t_reduced.gexf')
+	#for subg in nx.weakly_connected_component_subgraph(G_new):
 
 if __name__ == '__main__':
 	main()
