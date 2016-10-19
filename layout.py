@@ -84,8 +84,41 @@ def get_all_shortest_paths(subg, source, sink):
 	return ret
 
 
-
 '''
+Instead of finding all shortest paths, remove node on heaviest shortest path and repeat
+'''
+def get_variants(subg,source,sink):
+	#print subg.edges(data=True)
+	subg1 = subg.copy()
+	for u,v,data in subg1.edges(data=True):
+		if data['bsize'] == 0:
+			subg1[u][v]['bsize'] = 10
+		else:
+			subg1[u][v]['bsize'] = 1.0/data['bsize']
+	paths = []
+	path = nx.shortest_path(subg1,source,sink,weight='bsize')
+	paths.append(path)
+	if len(path) == 2:
+		return paths
+	for each in path:
+		if each != source and each != sink:
+			subg1.remove_node(each)
+
+	while True:
+		try:
+			path = nx.shortest_path(subg1,source,sink,weight='bsize')
+			paths.append(path)
+			for each in path:
+				if each != source and each != sink:
+					subg1.remove(each)
+			if len(path) == 2:
+				return paths
+
+		except:
+			return paths
+
+	return paths
+'''	
 This method takes a graph and makes it acyclic by removing lowest cost edge in a cycle
 '''
 
@@ -175,6 +208,10 @@ def no_of_paths(subg,source,sink):
 		dp[node] = -1
 	return  no_of_paths_helper(subg,source,sink,dp)
 
+
+'''
+This  is main method
+'''
 def main():
 
 	G = nx.read_gml("shakya_oriented.gml")
@@ -225,11 +262,11 @@ def main():
 		if comp[0] == prev_comp:
 			continue
 
-		comp_to_id[comp[0]] = id
-		comp2pairs[id] = []
-		id_to_comp[id] = comp
-		comp_to_pair[id] = []
-		id_to_longest_path[id] = -1
+		comp_to_id[comp[0]] = str(id)
+		comp2pairs[str(id)] = []
+		id_to_comp[str(id)] = comp
+		comp_to_pair[str(id)] = []
+		id_to_longest_path[str(id)] = -1
 		id += 1
 		prev_comp = comp[0]
 
@@ -291,6 +328,8 @@ def main():
 			if max_pair != -1:
 				# print "max_path = " + str(max_path)
 				# print "max_pair = " + str(max_pair)
+				# paths = get_variants(subg,max_pair.split('$')[0],max_pair.split('$')[1])
+				# print paths
 				cnt += 1
 				bubble_to_graph[key] = subg
 				valid_source_sink.append(max_pair)
@@ -324,6 +363,8 @@ def main():
 	# for each in sink:
 	# 	print len(G.out_edges(each))
 
+	# print source
+	# print sink
 	for key in valid_comps:
 		G_new.add_node(str(key))
 	for u,v,data in G.edges(data=True):
@@ -331,23 +372,33 @@ def main():
 			G_new.add_edge(u,v,data)
 
 	for node in G.nodes():
-		for each in source:
-			if G.has_edge(node,each):
-				#print 'here'
-				data = G.get_edge_data(node,each)
-				G_new.add_edge(node,source_sink_to_comp[each],data)
+		if node not in source and node not in sink:
+			for each in source:
+				if G.has_edge(node,each):
+					#print 'here'
+					data = G.get_edge_data(node,each)
+					G_new.add_edge(node,source_sink_to_comp[each],data)
+			for each in sink:
+				if G.has_edge(each,node):
+					#print 'here'
+					data = G.get_edge_data(each,node)
+					G_new.add_edge(source_sink_to_comp[each],node,data)
 
-		for each in sink:
-			if G.has_edge(each,node):
-				#print 'here'
-				data = G.get_edge_data(each,node)
-				G_new.add_edge(source_sink_to_comp[each],node,data)
-
+	for s in source:
+		for t in sink:
+			if source_sink_to_comp[s] != source_sink_to_comp[t]:
+				if G.has_edge(s,t):
+					data = G.get_edge_data(s,t)
+					G_new.add_edge(source_sink_to_comp[s],source_sink_to_comp[t],data)
+				if G.has_edge(t,s):
+					data = G.get_edge_data(t,s)
+					G_new.add_edge(source_sink_to_comp[t],source_sink_to_comp[s],data)
 	for node in G_new.nodes(data=True):
 		if node[0] in node_info:
 			info = node_info[node[0]]
 			for each in info:
 				node[1][each] = info[each]
+			node[1]['type'] = 'contig'
 		else:
 			node[1]['type'] = 'bubble'
 			#node[1]['size'] = len(bubble_to_graph[node[0]].nodes())
@@ -370,7 +421,112 @@ def main():
 	goes through the bubble, choose the heaviest path in the bubble and continue
 	'''
 
-	#for subg in nx.weakly_connected_component_subgraph(G_new):
+	alternative_contigs = [] #this stores all variants. Tag these as variants while writing to file
+	primary_contigs = []
+	for subg in nx.weakly_connected_component_subgraphs(G_new):
+		print 'here'
+		#First get all edges
+		edges = subg.edges(data=True)
+		#sort edges by weights
+		sorted_edges = sorted(edges,key = lambda tup: tup[2]['bsize'], reverse=True)
+		#print sorted_edges
+		#create a new graph
+		G_sorted = nx.Graph()
+		#add edges to this graph until for is created, this will be undirected graph and it will have
+		#'B' and 'E' nodes
+		nodes = set()
+		for edge in sorted_edges:
+			u = edge[0]
+			v = edge[1]
+			data = edge[2]
+			orientation  = data['orientation']
+			u = u + '$' + orientation[0]
+			v = v + '$' + orientation[1]
+			if not G_sorted.has_node(u) and not G_sorted.has_node(v):
+				G_sorted.add_edge(u,v,data)
+				nodes.add(u.split('$')[0])
+				nodes.add(v.split('$')[0])
+
+		#add edges between B and E nodes of same contig
+		for node in nodes:
+			G_sorted.add_edge(node+'$B',node+'$E')
+
+		#print G_sorted.edges(data=True)
+		#now trace out all linear paths in this, each will be a scaffold
+		for small_subg in nx.connected_component_subgraphs(G_sorted):
+			#print small_subg.edges()
+			p = []
+			for node in small_subg.nodes():
+				if small_subg.degree(node) == 1:
+					p.append(node)
+
+
+			if len(p) == 2:
+				path = nx.shortest_path(small_subg,p[0],p[1])
+
+				#if path has a bubble node, insert the contigs on the heaviest path on the bubble
+				new_path = []
+				new_path_ind = 0
+				for i in xrange(1,len(path),2):
+					node = path[i].split('$')[0]
+					if node not in bubble_to_graph:
+						new_path.append(path[i-1])
+						new_path.append(path[i])
+						new_path_ind += 2
+						continue
+
+					bubble_graph = bubble_to_graph[node]
+					curr_source = ''
+					curr_sink = ''
+					for node in bubble_graph.nodes():
+						if node in source:
+							curr_source = node
+						if node in sink:
+							curr_sink = node
+					try:
+						bubble_paths = get_variants(bubble_graph,curr_source,curr_sink)
+					except:
+						continue
+					heaviest = bubble_paths[0]
+					if len(new_path) > 0:
+						# print new_path[new_path_ind-1].split('$')[0]
+						# print new_path
+						if G.has_edge(new_path[new_path_ind-1].split('$')[0],heaviest[0]):
+							continue
+						else:
+							heaviest.reverse()
+
+					for each in heaviest:
+						orient = G.node[each]['orientation']
+						if orient == 'FOW':
+							new_path.append(each+'$B')
+							new_path.append(each+'$E')
+							new_path_ind += 2
+
+						if orient == 'REV':
+							new_path.append(each+'$E')
+							new_path.append(each+'$B')	
+							new_path_ind += 2
+
+					for i in xrange(1,len(bubble_paths)):
+						alt_path = []
+						curr_path = bubble_paths[i]
+						for each in curr_path:
+							o_node = G.node
+							if G.node[each]['orientation'] == 'FOW':
+								alt_path.append(each+'$B')
+								alt_path.append(each+'$E')
+
+							if G.node[each]['orientation'] == 'REV':
+								alt_path.append(each+'$E')
+								alt_path.append(each+'$B')
+
+						alternative_contigs.append(alt_path)
+				primary_contigs.append(new_path)
+				print new_path
+
+	print primary_contigs
+	print alternative_contigs
 
 if __name__ == '__main__':
 	main()
