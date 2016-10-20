@@ -1,13 +1,30 @@
 import networkx as nx
 from collections import deque
-from networkx.drawing.nx_agraph import write_dot
+#from networkx.drawing.nx_agraph import write_dot
 import operator
+import argparse
 
 
-'''
-This method validates if separation pair given by SPQR tree is valid source-sink pair for bubble
-The algorithm is same as the one in Marygold
-'''
+revcompl = lambda x: ''.join([{'A':'T','C':'G','G':'C','T':'A','N':'N','R':'N','M':'N','Y':'N','S':'N','W':'N','K':'N','a':'t','c':'g','g':'c','t':'a',' ':'',}[B] for B in x][::-1])
+
+def parse_fasta(fh):
+    fa = {}
+    current_short_name = None
+    # Part 1: compile list of lines per sequence
+    for ln in fh:
+        if ln[0] == '>':
+            # new name line; remember current sequence's short name
+            long_name = ln[1:].rstrip()
+            current_short_name = long_name.split()[0]
+            fa[current_short_name] = []
+        else:
+            # append nucleotides to current sequence
+            fa[current_short_name].append(ln.rstrip())
+    # Part 2: join lists into strings
+    for short_name, nuc_list in fa.iteritems():
+        # join this sequence's lines into one long string
+        fa[short_name] = ''.join(nuc_list)
+    return fa
 
 def test_pair(G,source,sink,members):
 
@@ -98,24 +115,25 @@ def get_variants(subg,source,sink):
 	paths = []
 	path = nx.shortest_path(subg1,source,sink,weight='bsize')
 	paths.append(path)
-	if len(path) == 2:
-		return paths
-	for each in path:
-		if each != source and each != sink:
-			subg1.remove_node(each)
+	# if len(path) == 2:
+	# 	return paths
+	# for each in path:
+	# 	if each != source and each != sink:
+	# 		subg1.remove_node(each)
 
-	while True:
-		try:
-			path = nx.shortest_path(subg1,source,sink,weight='bsize')
-			paths.append(path)
-			for each in path:
-				if each != source and each != sink:
-					subg1.remove(each)
-			if len(path) == 2:
-				return paths
+	# while True:
+	# 	print 'here'
+	# 	try:
+	# 		path = nx.shortest_path(subg1,source,sink,weight='bsize')
+	# 		paths.append(path)
+	# 		for each in path:
+	# 			if each != source and each != sink:
+	# 				subg1.remove(each)
+	# 		if len(path) == 2:
+	# 			return paths
 
-		except:
-			return paths
+	# 	except:
+	# 		return paths
 
 	return paths
 '''	
@@ -213,13 +231,20 @@ def no_of_paths(subg,source,sink):
 This  is main method
 '''
 def main():
+	parser = argparse.ArgumentParser()
+	parser.add_argument('-a','--assembly', help='Contig assembly', required=True)
+	parser.add_argument('-g','--oriented_graph', help='Oriented Graph of Contigs', required=True)
+	parser.add_argument('-s','--seppairs', help='Separation pairs detected in the graph', required=True)
+	parser.add_argument('-o','--output', help='Output file for scaffold sequences', required=True)
 
-	G = nx.read_gml("shakya_oriented.gml")
+	args = parser.parse_args()
+
+	G = nx.read_gml(args.oriented_graph)
 	#G = nx.read_gml("small.gml")
 	nx.write_gexf(G,'original.gexf')
 	pairmap = {}
 	pair_list = []
-	with open('shakya_bicomp','r') as f:
+	with open(args.seppairs,'r') as f:
 		for line in f:
 			attrs = line.split()
 			if attrs[0] <= attrs[1]:
@@ -232,7 +257,7 @@ def main():
 	validated = {}
 	contig2id = {}
 	cnt = 0
-	write_dot(G,'graph.dot')
+	#write_dot(G,'graph.dot')
 
 	# for key in pairmap:
 	# 	print len(pairmap[key])
@@ -302,7 +327,7 @@ def main():
 	source = {}
 	sink = {}
 	source_sink_to_comp = {}
-	print len(valid_comps)
+	#print len(valid_comps)
 	cnt = 0
 	bubble_to_graph = {}
 	for key in valid_comps:
@@ -343,7 +368,7 @@ def main():
 		# else:
 		# 	subg = make_acyclic
 
-	print cnt
+	#print cnt
 
 	'''
 	Here, find now the new graph by collapsing bubbles
@@ -413,7 +438,7 @@ def main():
 	print len(G_new.nodes())
 	print len(G_new.edges())
 	#nx.write_gexf(G_new,'simplified.gexf')
-	write_dot(G_new,'simplified.dot')
+	#write_dot(G_new,'simplified.dot')
 	nx.write_gml(G_new,'simplified.gml')
 
 	'''
@@ -424,7 +449,8 @@ def main():
 	alternative_contigs = [] #this stores all variants. Tag these as variants while writing to file
 	primary_contigs = []
 	for subg in nx.weakly_connected_component_subgraphs(G_new):
-		print 'here'
+		# print len(subg.nodes())
+		# print 'here'
 		#First get all edges
 		edges = subg.edges(data=True)
 		#sort edges by weights
@@ -451,6 +477,7 @@ def main():
 		for node in nodes:
 			G_sorted.add_edge(node+'$B',node+'$E')
 
+		#print len(G_sorted.edges())
 		#print G_sorted.edges(data=True)
 		#now trace out all linear paths in this, each will be a scaffold
 		for small_subg in nx.connected_component_subgraphs(G_sorted):
@@ -487,6 +514,7 @@ def main():
 						bubble_paths = get_variants(bubble_graph,curr_source,curr_sink)
 					except:
 						continue
+						
 					heaviest = bubble_paths[0]
 					if len(new_path) > 0:
 						# print new_path[new_path_ind-1].split('$')[0]
@@ -497,6 +525,7 @@ def main():
 							heaviest.reverse()
 
 					for each in heaviest:
+						#print 'appending heaviest'
 						orient = G.node[each]['orientation']
 						if orient == 'FOW':
 							new_path.append(each+'$B')
@@ -509,6 +538,7 @@ def main():
 							new_path_ind += 2
 
 					for i in xrange(1,len(bubble_paths)):
+						print 'in alternate path'
 						alt_path = []
 						curr_path = bubble_paths[i]
 						for each in curr_path:
@@ -523,10 +553,34 @@ def main():
 
 						alternative_contigs.append(alt_path)
 				primary_contigs.append(new_path)
-				print new_path
+				#print new_path
 
-	print primary_contigs
-	print alternative_contigs
+	assembly = open(args.assembly,'r')
+	sequences = parse_fasta(assembly.readlines())
+	ofile = open(args.output,'w')
+
+	scaffold_id = 1
+	for scaffold in primary_contigs:
+		scaff_string = ''
+		for i in xrange(0,len(scaffold) - 1,2):
+			curr = scaffold[i]
+			next = scaffold[i+1]
+			contig = curr.split('$')[0]
+			start = curr.split('$')[1]
+			end = next.split('$')[1]
+			if start == 'B' and end == 'E':
+				scaff_string += sequences[contig]
+			else:
+				scaff_string += revcompl(sequences[contig])
+
+		chunks = [scaff_string[i:i+80] for i in xrange(0,len(scaff_string),80)]
+		ofile.write('>scaffold_'+str(scaffold_id)+'\n')
+		for chunk in chunks:
+			ofile.write(chunk+'\n')
+		scaffold_id += 1
+
 
 if __name__ == '__main__':
 	main()
+
+
