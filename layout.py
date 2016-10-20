@@ -228,6 +228,35 @@ def no_of_paths(subg,source,sink):
 
 
 '''
+This method finds alternative paths in the bubble
+'''
+
+def get_alternative_paths(subg,path):
+	paths = []
+	subg1 = subg.copy()
+	for node in path:
+		subg1.remove_node(node)
+
+	for comp in nx.weakly_connected_component_subgraphs(subg1):
+		if len(comp.nodes()) == 1:
+			paths.append(comp.nodes())
+		else:
+			p = []
+			for node in comp.nodes():
+				if comp.out_degree(node) == 1 and comp.in_degree(node) == 0:
+					p.append(node)
+			for node in comp.nodes():
+				if comp.out_degree(node) == 0 and comp.in_degree(node) == 1:
+					p.append(node)
+
+			if len(p) == 2:
+				try:
+					paths.append(nx.shortest_path(comp,p[0],p[1]))
+				except:
+					continue
+
+	return paths
+'''
 This  is main method
 '''
 def main():
@@ -537,24 +566,28 @@ def main():
 							new_path.append(each+'$B')	
 							new_path_ind += 2
 
-					for i in xrange(1,len(bubble_paths)):
-						print 'in alternate path'
-						alt_path = []
-						curr_path = bubble_paths[i]
-						for each in curr_path:
-							o_node = G.node
-							if G.node[each]['orientation'] == 'FOW':
-								alt_path.append(each+'$B')
-								alt_path.append(each+'$E')
+					alt_paths = get_alternative_paths(bubble_graph,heaviest)
+					if len(alt_paths) > 0:
+						for i in xrange(0,len(alt_paths)):
+							#print 'in alternate path'
+							alt_path = []
+							curr_path = alt_paths[i]
+							for each in curr_path:
+								o_node = G.node
+								if G.node[each]['orientation'] == 'FOW':
+									alt_path.append(each+'$B')
+									alt_path.append(each+'$E')
 
-							if G.node[each]['orientation'] == 'REV':
-								alt_path.append(each+'$E')
-								alt_path.append(each+'$B')
+								if G.node[each]['orientation'] == 'REV':
+									alt_path.append(each+'$E')
+									alt_path.append(each+'$B')
 
-						alternative_contigs.append(alt_path)
+							alternative_contigs.append(alt_path)
 				primary_contigs.append(new_path)
 				#print new_path
 
+	print len(primary_contigs)
+	print len(alternative_contigs)
 	assembly = open(args.assembly,'r')
 	sequences = parse_fasta(assembly.readlines())
 	ofile = open(args.output,'w')
@@ -579,6 +612,24 @@ def main():
 			ofile.write(chunk+'\n')
 		scaffold_id += 1
 
+	for scaffold in alternative_contigs:
+		scaff_string = ''
+		for i in xrange(0,len(scaffold) - 1,2):
+			curr = scaffold[i]
+			next = scaffold[i+1]
+			contig = curr.split('$')[0]
+			start = curr.split('$')[1]
+			end = next.split('$')[1]
+			if start == 'B' and end == 'E':
+				scaff_string += sequences[contig]
+			else:
+				scaff_string += revcompl(sequences[contig])
+
+		chunks = [scaff_string[i:i+80] for i in xrange(0,len(scaff_string),80)]
+		ofile.write('>scaffold_'+str(scaffold_id)+'_variant\n')
+		for chunk in chunks:
+			ofile.write(chunk+'\n')
+		scaffold_id += 1
 
 if __name__ == '__main__':
 	main()
