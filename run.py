@@ -48,12 +48,19 @@ def main():
 
     print >> sys.stderr, time.strftime("%c")+':Started bulding of links between contigs'
     if os.path.exists(args.dir+'/bundled_links') == False:
-       os.system('./bundler -l '+ args.dir+'/contig_links -o ' + args.dir+'/bundled_links')
-    print >> sys.stderr, time.strftime("%c")+':Finished bulding of links between contigs'
+       os.system('./bundler -l '+ args.dir+'/contig_links -o ' + args.dir+'/bundled_links + -b '+args.dir+'/bundled_graph.gml')
+    print >> sys.stderr, time.strftime("%c")+':Finished bunlding of links between contigs'
+
+    print >> sys.stderr, time.strftime("%c")+':Started finding and removing repeats'
+    if os.path.exists(args.dir+'/repeats') == False:
+       os.system('./vc_algo -g '+ args.dir+'/bundled_graph.gml -r ' + args.dir+'/repeats -f 0.02')
+       #print './vc_algo -g '+ args.dir+'/bundled_graph.gml -r ' + args.dir+'/repeats -f 0.02'
+       os.system('python remove_repeats.py -l '+ args.dir+'/bundled_links -r ' + args.dir+'/repeats -o '+ args.dir+'/bundled_links_filtered')
+    print >> sys.stderr, time.strftime("%c")+':Finished repeat finding and removal'
 
     print >> sys.stderr, time.strftime("%c")+':Started orienting the contigs'
     if os.path.exists(args.dir+'/oriented_links') == False:
-       os.system('./orientcontigs -l '+args.dir+'/bundled_links -c '+ args.dir+'/contig_length --bsize -o ' +args.dir+'/oriented.gml -p ' + args.dir+'/oriented_links' ) 
+       os.system('./orientcontigs -l '+args.dir+'/bundled_links_filtered -c '+ args.dir+'/contig_length --bsize -o ' +args.dir+'/oriented.gml -p ' + args.dir+'/oriented_links' ) 
     print >> sys.stderr, time.strftime("%c")+':Finished orienting the contigs'
     
     print >> sys.stderr, time.strftime("%c")+':Started finding separation pairs'

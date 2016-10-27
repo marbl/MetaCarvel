@@ -124,11 +124,13 @@ int main(int argc, char* argv[])
     cmdline ::parser pr;
     pr.add<string>("contigs",'l',"contig links",true,"");
     pr.add<string>("output",'o',"output file",true,"");
-    pr.add<int>("cutoff",'c',"number of mate pairs to support an edge",false,1);
+    pr.add<string>("bgraph",'b',"bundled graph in gml format",true,"");
+    pr.add<int>("cutoff",'c',"number of mate pairs to support an edge",false,3);
     pr.parse_check(argc,argv);
 
     ifstream linkfile(getCharExpr(pr.get<string>("contigs")));
     ofstream ofile(getCharExpr(pr.get<string>("output")));
+    ofstream g(getCharExpr(pr.get<string>("bgraph")));
 
     string line;
     int linkid = 1;
@@ -364,32 +366,35 @@ int main(int argc, char* argv[])
         }
     }
 
-    ofstream g("bundled_graph.gml");
     g <<"graph ["<<endl;
-    g <<"	directed 1"<<endl;
+    g <<" directed 1"<<endl;
     for(map<string,int> :: iterator it = contig2node.begin(); it != contig2node.end(); ++it)
     {
-        g<<"	node["<<endl;
-        g<<"		id "<<it->second<<endl;
-        g<<"		label \""<<it->first<<"\""<<endl;
-        g<<"	]"<<endl;
+        g<<" node["<<endl;
+        g<<"  id "<<it->second<<endl;
+        g<<"  label \""<<it->first<<"\""<<endl;
+        g<<" ]"<<endl;
     }
     for(int i = 0;i < bundled_links.size();i++)
     {
         Link l = bundled_links[i];
-        g<<"	edge["<<endl;
-        g<<"		source "<<contig2node[l.getfirstcontig()]<<endl;
-        g<<"		target "<<contig2node[l.getsecondcontig()]<<endl;
-        g<<"		mean "<<l.getmean()<<endl;
-        g<<"		stdev "<<l.getstdev()<<endl;
-        g<<"		bsize "<<l.get_bundle_size()<<endl;
-        g<<"	]"<<endl;
+        if (l.get_bundle_size() >= cutoff)
+        {
+            g<<" edge["<<endl;
+            g<<"  source "<<contig2node[l.getfirstcontig()]<<endl;
+            g<<"  target "<<contig2node[l.getsecondcontig()]<<endl;
+            g<<"  mean "<<l.getmean()<<endl;
+            g<<"  stdev "<<l.getstdev()<<endl;
+            g<<"  bsize "<<l.get_bundle_size()<<endl;
+            g<<" ]"<<endl;
+        }
     }
     g<<"]";
     for(int i = 0;i < bundled_links.size();i++)
     {
         Link l = bundled_links[i];
-        ofile<<l.getfirstcontig()<<"\t"<<l.getfirstorietation()<<"\t"<<l.getsecondcontig()<<"\t"<<l.getsecondorientation()<<"\t"<<l.getmean()<<"\t"<<l.getstdev()<<"\t"<<l.get_bundle_size()<<endl;
+        if (l.get_bundle_size() >= cutoff)
+            ofile<<l.getfirstcontig()<<"\t"<<l.getfirstorietation()<<"\t"<<l.getsecondcontig()<<"\t"<<l.getsecondorientation()<<"\t"<<l.getmean()<<"\t"<<l.getstdev()<<"\t"<<l.get_bundle_size()<<endl;
     }
     //write code to dump to gml file
     return 0;
