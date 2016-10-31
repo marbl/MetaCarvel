@@ -591,6 +591,7 @@ def main():
 	assembly = open(args.assembly,'r')
 	sequences = parse_fasta(assembly.readlines())
 	ofile = open(args.output,'w')
+	scaffolded = {}
 
 	scaffold_id = 1
 	for scaffold in primary_contigs:
@@ -598,6 +599,8 @@ def main():
 		for i in xrange(0,len(scaffold) - 1,2):
 			curr = scaffold[i]
 			next = scaffold[i+1]
+			scaffolded[curr] = True
+			scaffolded[next] = True
 			contig = curr.split('$')[0]
 			start = curr.split('$')[1]
 			end = next.split('$')[1]
@@ -617,6 +620,8 @@ def main():
 		for i in xrange(0,len(scaffold) - 1,2):
 			curr = scaffold[i]
 			next = scaffold[i+1]
+			scaffolded[curr] = True
+			scaffolded[next] = True
 			contig = curr.split('$')[0]
 			start = curr.split('$')[1]
 			end = next.split('$')[1]
@@ -631,6 +636,16 @@ def main():
 			ofile.write(chunk+'\n')
 		scaffold_id += 1
 
+	for contig in sequences:
+		if contig not in scaffolded:
+			scaff_string = sequences[contig]
+			chunks = [scaff_string[i:i+80] for i in xrange(0,len(scaff_string),80)]
+			ofile.write('>scaffold_'+str(scaffold_id)+'_variant\n')
+			for chunk in chunks:
+				ofile.write(chunk+'\n')
+			scaffold_id += 1
+
+	ofile.close()
 if __name__ == '__main__':
 	main()
 
