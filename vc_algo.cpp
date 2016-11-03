@@ -80,7 +80,7 @@ int main(int argc, char* argv[]) {
 	}
 
 	
-	ApproxBetweenness centrality(g, delta, epsilon, 2);
+	ApproxBetweenness centrality(g, delta, epsilon,0);
 	//Closeness centrality(g,false,true);
 	centrality.run();
 	ofstream myfile;
