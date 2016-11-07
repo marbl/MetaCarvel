@@ -599,8 +599,8 @@ def main():
 		for i in xrange(0,len(scaffold) - 1,2):
 			curr = scaffold[i]
 			next = scaffold[i+1]
-			scaffolded[curr] = True
-			scaffolded[next] = True
+			scaffolded[curr.split('$')[0]] = True
+			scaffolded[next.split('$')[0]] = True
 			contig = curr.split('$')[0]
 			start = curr.split('$')[1]
 			end = next.split('$')[1]
@@ -620,8 +620,8 @@ def main():
 		for i in xrange(0,len(scaffold) - 1,2):
 			curr = scaffold[i]
 			next = scaffold[i+1]
-			scaffolded[curr] = True
-			scaffolded[next] = True
+			scaffolded[curr.split('$')[0]] = True
+			scaffolded[next.split('$')[0]] = True
 			contig = curr.split('$')[0]
 			start = curr.split('$')[1]
 			end = next.split('$')[1]
@@ -640,7 +640,7 @@ def main():
 		if contig not in scaffolded:
 			scaff_string = sequences[contig]
 			chunks = [scaff_string[i:i+80] for i in xrange(0,len(scaff_string),80)]
-			ofile.write('>scaffold_'+str(scaffold_id)+'_variant\n')
+			ofile.write('>scaffold_'+str(scaffold_id)+'\n')
 			for chunk in chunks:
 				ofile.write(chunk+'\n')
 			scaffold_id += 1
