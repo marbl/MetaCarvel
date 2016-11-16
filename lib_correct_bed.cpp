@@ -101,6 +101,7 @@ LibRecord :: LibRecord(string lib_id, string read_1, string read_2, string forma
 
 map<string, int> contig2length;
 map<string, int> contig2bases;
+map<string, int> contig2reads;
 
 
 void get_contig_length(string file)
@@ -196,6 +197,8 @@ int main(int argc, char* argv[])
     pr.add<string>("lib_info",'l',"file containing information about library",true,"");
     pr.add<string>("alignment_info",'a',"alignment of read to assembled contigs in bed format",true,"");
     pr.add<string>("contig_file",'d',"file containing length of contigs",true,"");
+    pr.add<string>("coverage_file",'x',"file to output coverage of contigs",true,"");
+    pr.add<int>("length_cutoff",'c',"length cutoff on contigs to be used for scaffolding",false,500);
     pr.add<string>("output",'o',"output file",true,"");
     pr.parse_check(argc,argv);
 
@@ -206,6 +209,7 @@ int main(int argc, char* argv[])
 	ifstream libfile(getCharExpr(pr.get<string>("lib_info")));
 	vector<LibRecord> libraries;
 	string line;
+	int threshold = pr.get<int>("length_cutoff");
 	while(getline(libfile,line))
 	{
 		istringstream iss(line);
@@ -229,6 +233,11 @@ int main(int argc, char* argv[])
 			BedRecord second = second_in_pair[read];
 			if(first.contig == second.contig)
 			{
+				if(contig2reads.find(first.contig) == contig2reads.end())
+				{
+					contig2reads[first.contig] = 0;
+				}
+				contig2reads[first.contig] += 1;
 				int insert_size = get_insert_size(first.start, first.end, second.start, second.end);
 				//cout<<insert_size<<endl;
 				insert_sizes.push_back(insert_size);
@@ -244,6 +253,14 @@ int main(int argc, char* argv[])
 	double stdev = std::sqrt(sq_sum / insert_sizes.size() - mean * mean);
 	cerr<<"Mean = "<<mean<<endl;
 	cerr<<"Stdev = "<<stdev<<endl;
+	//calculate coverage
+	ofstream covfile(getCharExpr(pr.get<string>("coverage_file")));
+	for(map<string,int> :: iterator it = contig2reads.begin(); it != contig2reads.end(); ++it)
+	{
+		int len = contig2length[it->first];
+		double coverage = it->second * 1.0 * mean / len;
+		covfile<<it->first<<"\t"<<coverage<<endl;
+	}
 	//calculate links between contigs based on mate pair information, iterate through maps of mate pairs and find links
 	ofstream ofile(getCharExpr(pr.get<string>("output")));
 	for(it = first_in_pair.begin(); it != first_in_pair.end(); ++it)
@@ -253,6 +270,10 @@ int main(int argc, char* argv[])
 		if(second_in_pair.find(it->first) != second_in_pair.end())
 		{
 			BedRecord second = second_in_pair[it->first];
+			if(contig2length[first.contig] <= threshold || contig2length[second.contig] <= threshold)
+			{
+				continue;
+			}
 			if(first.contig != second.contig)
 			{
 				if(first.strand == '+' && second.strand == '+')
