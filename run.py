@@ -43,7 +43,7 @@ def main():
     print >> sys.stderr, time.strftime("%c") + ':Started generating links between contigs'
     if os.path.exists(args.dir+'/contig_links') == False:
        	#print './libcorrect -l' + args.lib + ' -a' + args.dir+'/alignment.bed -d ' +args.dir+'/contig_length -o '+ args.dir+'/contig_links'
-	os.system('./libcorrect -l ' + args.lib + ' -a ' + args.dir+'/alignment.bed -d ' +args.dir+'/contig_length -o '+ args.dir+'/contig_links')
+	os.system('./libcorrect -l ' + args.lib + ' -a ' + args.dir+'/alignment.bed -d ' +args.dir+'/contig_length -o '+ args.dir+'/contig_links -x '+args.dir+'/contig_coverage')
     print >> sys.stderr, time.strftime("%c") +':Finished generating links between contigs'
 
     print >> sys.stderr, time.strftime("%c")+':Started bulding of links between contigs'
