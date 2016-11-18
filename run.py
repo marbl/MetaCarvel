@@ -55,7 +55,7 @@ def main():
     if os.path.exists(args.dir+'/repeats') == False:
        os.system('./vc_algo -g '+ args.dir+'/bundled_graph.gml -r ' + args.dir+'/repeats -f 0.02')
        #print './vc_algo -g '+ args.dir+'/bundled_graph.gml -r ' + args.dir+'/repeats -f 0.02'
-       os.system('python remove_repeats.py -l '+ args.dir+'/bundled_links -r ' + args.dir+'/repeats -o '+ args.dir+'/bundled_links_filtered')
+       os.system('python remove_repeats.py -l '+ args.dir+'/bundled_links -r ' + args.dir+'/repeats -o '+ args.dir+'/bundled_links_filtered -c '+args.dir+'/contig_coverage')
     print >> sys.stderr, time.strftime("%c")+':Finished repeat finding and removal'
 
     print >> sys.stderr, time.strftime("%c")+':Started orienting the contigs'
