@@ -37,8 +37,7 @@ def find_tandem_repeats(G,to_write):
             attrs = node.split('_')
             curr_cov = float(attrs[-1])
             if curr_cov >= 2* cov_pre and curr_cov >= 2*cov_suc:
-                if int(attrs[3]) >= 300:
-                    nodes.append(node)
+                nodes.append(node)
 
 
     ofile = open(to_write,'w')
@@ -84,7 +83,7 @@ def find_three_bubbles(G,to_write,seppairs):
                 if G.has_edge(attrs[2],attrs[3]) and G.has_edge(attrs[3],attrs[4]) and G.has_edge(attrs[2],attrs[4]):
                     for each in attrs:
                         explored[each] = True
-                        ofile.write(attrs[2]+'\t'+attrs[3]+'\t'+attrs[4]+'\n')
+                    ofile.write(attrs[2]+'\t'+attrs[3]+'\t'+attrs[4]+'\n')
 
 
 def find_four_bubbles(G,to_write,seppairs):
@@ -105,7 +104,7 @@ def find_four_bubbles(G,to_write,seppairs):
                 if G.has_edge(attrs[2],attrs[3]) and G.has_edge(attrs[3],attrs[5]) and G.has_edge(attrs[2],attrs[4]) and G.has_edge(attrs[4],attrs[5]):
                     for each in attrs:
                         explored[each] = True
-                        ofile.write(attrs[2]+'\t'+attrs[3]+'\t'+attrs[4]+'\t'+attrs[5]+'\n')
+                    ofile.write(attrs[2]+'\t'+attrs[3]+'\t'+attrs[4]+'\t'+attrs[5]+'\n')
 
 
 def find_cycles(G,to_write):
