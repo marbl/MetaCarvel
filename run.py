@@ -5,6 +5,10 @@ import time
 import subprocess
 from subprocess import Popen, PIPE
 
+def cmd_exists(cmd):
+    return subprocess.call("type " + cmd, shell=True, 
+        stdout=subprocess.PIPE, stderr=subprocess.PIPE) == 0
+
 def main():
     bin=os.path.dirname(os.path.abspath(__file__))
 
@@ -12,10 +16,17 @@ def main():
     parser.add_argument("-a","--assembly",help="assembled contigs",required=True)
     parser.add_argument("-m","--mapping", help="mapping of read to contigs in bam format",required=True)
     parser.add_argument("-d","--dir",help="output directory for results",default='out',required=True)
-    parser.add_argument("-l","--lib",help="library description for mate pairs",default='out',required=True)
     parser.add_argument("-f",'--force',help="force re-run of pipeline, will remove any existing output",default=False)
 
     args = parser.parse_args()
+
+    if not cmd_exists('samtools'):
+      print >> sys.stderr, time.strftime("%c")+': Samtools does not exist in PATH. Terminating....\n'
+      sys.exit()
+
+    if not cmd_exists('bedtools'):
+      print >> sys.stderr, time.strftime("%c")+': Bedtools does not exist in PATH. Terminating....\n'
+      sys.exit()
 
     if not os.path.exists(args.dir):
         os.makedirs(args.dir)
@@ -58,7 +69,7 @@ def main():
         #print './libcorrect -l' + args.lib + ' -a' + args.dir+'/alignment.bed -d ' +args.dir+'/contig_length -o '+ args.dir+'/contig_links'
         try:
           #os.system('./libcorrect -l ' + args.lib + ' -a ' + args.dir+'/alignment.bed -d ' +args.dir+'/contig_length -o '+ args.dir+'/contig_links -x '+args.dir+'/contig_coverage')
-           p = subprocess.check_output('./libcorrect -l ' + args.lib + ' -a ' + args.dir+'/alignment.bed -d ' +args.dir+'/contig_length -o '+ args.dir+'/contig_links -x '+args.dir+'/contig_coverage',shell=True)
+           p = subprocess.check_output('./libcorrect -a ' + args.dir+'/alignment.bed -d ' +args.dir+'/contig_length -o '+ args.dir+'/contig_links -x '+args.dir+'/contig_coverage',shell=True)
            print >> sys.stderr, time.strftime("%c") +':Finished generating links between contigs'
         except subprocess.CalledProcessError as err:
             print >> sys.stderr, time.strftime("%c")+': Failed in generate links from bed file, terminating scaffolding....\n' + str(err.output)
@@ -94,7 +105,7 @@ def main():
     if os.path.exists(args.dir+'/oriented_links') == False:
       #os.system('./orientcontigs -l '+args.dir+'/bundled_links_filtered -c '+ args.dir+'/contig_length --bsize -o ' +args.dir+'/oriented.gml -p ' + args.dir+'/oriented_links' ) 
       try:
-        p = subprocess.check_output('./orientcontigs -l '+args.dir+'/bundled_links_filtered -c '+ args.dir+'/contig_length --bsize -o ' +args.dir+'/oriented.gml -p ' + args.dir+'/oriented_links',shell=True)
+        p = subprocess.check_output('./orientcontigs -l '+args.dir+'/bundled_links_filtered -c '+ args.dir+'/contig_length --bsize -o ' +args.dir+'/oriented.gml -p ' + args.dir+'/oriented_links -i '+args.dir+'/invalidated_counts',shell=True)
         print >> sys.stderr, time.strftime("%c")+':Finished orienting the contigs'
       except subprocess.CalledProcessError:
         print >> sys.stderr, time.strftime("%c")+': Failed to Orient contigs, terminating scaffolding....'

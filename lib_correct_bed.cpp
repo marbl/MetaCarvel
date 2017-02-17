@@ -194,7 +194,7 @@ double estimate_distance(double mean, int start1, int end1, int start2, int end2
 int main(int argc, char* argv[])
 {
     cmdline ::parser pr;
-    pr.add<string>("lib_info",'l',"file containing information about library",true,"");
+    //pr.add<string>("lib_info",'l',"file containing information about library",true,"");
     pr.add<string>("alignment_info",'a',"alignment of read to assembled contigs in bed format",true,"");
     pr.add<string>("contig_file",'d',"file containing length of contigs",true,"");
     pr.add<string>("coverage_file",'x',"file to output coverage of contigs",true,"");
@@ -206,19 +206,19 @@ int main(int argc, char* argv[])
     //getFastqSequences(getCharExpr(pr.get<string>("lib_info")));
 	//vector<SAMRecord> alignments = parseSAM(pr.get<string>("lib_info"));
 	get_contig_length(pr.get<string>("contig_file"));
-	ifstream libfile(getCharExpr(pr.get<string>("lib_info")));
+	//ifstream libfile(getCharExpr(pr.get<string>("lib_info")));
 	vector<LibRecord> libraries;
 	string line;
 	int threshold = pr.get<int>("length_cutoff");
-	while(getline(libfile,line))
-	{
-		istringstream iss(line);
-		string a,b,c,d,e;
-		double mean, stdev, minimum, maximum;
-		iss >> a >> b >> c >> d >> mean >> stdev >> minimum >> maximum >> e;
-		LibRecord record(a,b,c,d,mean,stdev,minimum,maximum,e);
-		libraries.push_back(record);
-	}
+	// while(getline(libfile,line))
+	// {
+	// 	istringstream iss(line);
+	// 	string a,b,c,d,e;
+	// 	double mean, stdev, minimum, maximum;
+	// 	iss >> a >> b >> c >> d >> mean >> stdev >> minimum >> maximum >> e;
+	// 	LibRecord record(a,b,c,d,mean,stdev,minimum,maximum,e);
+	// 	libraries.push_back(record);
+	// }
 	parse_bed(pr.get<string>("alignment_info"));
 	vector<int> insert_sizes;
 	//iterate through all records and estimate library size

@@ -218,11 +218,11 @@ map<int, bool> invalidlinks;
 map<string, int> contig2length;
 map<string, int> contigs2bundle;
 map<string, int> contig2degree;
-ofstream invalidfile("hmp/invalid_counts");
+ofstream invalidfile;
 
 int findorientation(string node_to_orient)
 {
-    cout<<"finding orientation for node "<<node_to_orient<<endl;
+    cerr<<"finding orientation for node "<<node_to_orient<<endl;
     int curr_fow = 0, curr_rev = 0;
     if(adjacency.find(node_to_orient) != adjacency.end())
     {
@@ -618,6 +618,7 @@ int main(int argc, char* argv[])
     pr.add("bsize",'\0',"sort contigs by bundle size");
     pr.add("degree",'\0',"sort contigs by degree");
     pr.add<string>("output",'o',"output graph file",true,"");
+    pr.add<string>("invalid",'i',"file to log count of invalidated links",true,"");
     pr.add<string>("output_links",'p',"file where links are written as TSV format",true,"");
     pr.parse_check(argc,argv);
     map<string,double> contig2coverage;
@@ -637,6 +638,7 @@ int main(int argc, char* argv[])
     ifstream linkfile(getCharExpr(pr.get<string>("bundled_graph")));
     ofstream ofile(getCharExpr(pr.get<string>("output")));
     ofstream tablinks(getCharExpr(pr.get<string>("output_links")));
+    invalidfile.open(getCharExpr(pr.get<string>("invalid")));
     int linkid = 0;
     map<int, Link> linkmap;
     while(getline(linkfile,line))
