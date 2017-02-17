@@ -1,54 +1,30 @@
-Bambus 3 - Scaffolder for metagenomes
-The main 4 files are lib_correct_bed.cpp, bundler.cpp, orientcontigs.cpp and vc_algo.cpp. The repeat detection is done in vc_algo.cpp. These are the instructions to read the code.
+# Bambus 3 - Scaffolder for metagenomes
 
-1. lib_correct_bed.cpp
-usage: ./libcorrect --lib_info=string --alignment_info=string --contig_file=string --output=string [options] ... 
-options:
-  -l, --lib_info          file containing information about library (string)
-  -a, --alignment_info    alignment of read to assembled contigs in bed format (string)
-  -d, --contig_file       file containing length of contigs (string)
-  -o, --output            output file (string)
-  -?, --help              print this message
+Bambus3 is an updated version of previous metagenome scaffolder Bambus 2. To run Bambus 3, you will need [Samtools](http://samtools.sourceforge.net), [Bedtools](http://bedtools.readthedocs.io/en/latest/), and [Networkx](https://networkx.github.io/).
 
-2. bundler.cpp
-usage: ./bundler --contigs=string --output=string [options] ... 
-options:
-  -l, --contigs    contig links (string)
-  -o, --output     output file (string)
-  -c, --cutoff     number of mate pairs to support an edge (int [=1])
-  -?, --help       print this message
+To install the software, please execute following commands:
+```
+cd bambus3
+make
+```
 
-3. orientocntigs.cpp
-usage: ./orientcontigs --bundled_graph=string --contig_length=string --output=string [options] ... 
-options:
-  -l, --bundled_graph    list of bundled links (string)
-  -c, --contig_length    contig lengths (string)
-      --length           sort contigs by size
-      --bsize            sort contigs by bundle size
-      --degree           sort contigs by degree
-  -o, --output           output file (string)
-  -?, --help             print this message
+To run bambus3, run the following;
 
-
-There are 3 options for this depending on in what order you want to orient contigs. I choose longest contig first orientation.
-
-4. vc_algo.cpp
-There is binary for this file. You will need networKit package in order to build this.
-usage: ./vc_algo --oriented_graph=string --repeats_file=string [options] ... 
-options:
-  -g, --oriented_graph    give graph of oriented contigs (string)
-  -r, --repeats_file      file where to write repeated nodes (string)
-  -f, --epsilon           sampling parameter (double [=0.2])
-  -?, --help              print this message
-
-The input is in gml format. The outoaddut will be just a list of contigs which are marked as repeats.
-
-5. If the graph in multigraph, then vc_algo.cpp does not work. You can use this python script to mark repeats. You will need networkx package.
-usage: test_centrality.py [-h] [-g ORIENTED_GRAPH]
+```
+python run.py -h
+usage: run.py [-h] -a ASSEMBLY -m MAPPING -d DIR [-f FORCE]
 
 optional arguments:
   -h, --help            show this help message and exit
-  -g ORIENTED_GRAPH, --oriented_graph ORIENTED_GRAPH
-                        Oriented graph
+  -a ASSEMBLY, --assembly ASSEMBLY
+                        assembled contigs
+  -m MAPPING, --mapping MAPPING
+                        mapping of read to contigs in bam format
+  -d DIR, --dir DIR     output directory for results
+  -f FORCE, --force FORCE
+                        force re-run of pipeline, will remove any existing
+                        output
+```
 
-This will print repeats to stdout.                
+This will generate a bunch of files in the output directory. If you are interested in output of each step of the scaffolding process, these files can 
+be useful. The final output files are scaffolds.fasta - which contains sequences of scaffolds  and scaffolds.agp is an agp style information for assignment of contigs to scaffolds. 
