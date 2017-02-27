@@ -19,9 +19,9 @@ def main():
     parser.add_argument("-d","--dir",help="output directory for results",default='out',required=True)
     parser.add_argument("-f",'--force',help="force re-run of pipeline, will remove any existing output",default=False)
     parser.add_argument("-r",'--repeats',help="To turn repeat detection on",default=False)
-    parser.add_argument("-k","--keep", help="Set this to kepp temporary files in output directory",default=False)
+    parser.add_argument("-k","--keep", help="Set this to keep temporary files in output directory",default=False)
     parser.add_argument("-l","--length",help="Minimum length of contigs to consider for scaffolding",default=500)
-    parser.add_argument("-b","--bsize",help="Minium mate pair support between contigs to consider for scaffolding",default=3)
+    parser.add_argument("-b","--bsize",help="Minimum mate pair support between contigs to consider for scaffolding",default=3)
 
     args = parser.parse_args()
     try:
