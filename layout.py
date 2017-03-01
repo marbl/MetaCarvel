@@ -1,5 +1,6 @@
 import networkx as nx
 from collections import deque
+import sys
 #from networkx.drawing.nx_agraph import write_dot
 import operator
 import argparse
@@ -256,6 +257,35 @@ def get_alternative_paths(subg,path):
 					continue
 
 	return paths
+
+
+'''
+This metod writes the graph in GFA format
+'''
+def write_GFA(G,file):
+	ofile = open(file,'w')
+	#write nodes first
+	ofile.write("H\t"+"VN:Z:Bambus3/Graph\n")
+	for node,data in G.nodes(data=True):
+		length = data['length']
+		ofile.write("S\t"+str(node)+"\t*\t"+"LN:i:"+str(length)+"\n")
+	for u,v,data in G.edges(data=True):
+		first = ''
+		second = ''
+		if data["orientation"] == 'BB':
+			first = '-'
+			second = '+'
+		if data["orientation"] == 'BE':
+			first = '-'
+			second = '-'
+		if data["orientation"] == 'EB':
+			first = '+'
+			second = '+'
+		if data["orientation"] == 'EE':
+			first = '+'
+			second = '-'
+		ofile.write('L\t'+u+'\t'+first+'\t'+v+'\t'+second+'\t'+str(data['bsize'])+'\n')
+
 '''
 This  is main method
 '''
@@ -265,11 +295,14 @@ def main():
 	parser.add_argument('-g','--oriented_graph', help='Oriented Graph of Contigs', required=True)
 	parser.add_argument('-s','--seppairs', help='Separation pairs detected in the graph', required=True)
 	parser.add_argument('-o','--output', help='Output file for scaffold sequences', required=True)
+	parser.add_argument('-e','--gfa', help='Output file for graph in GFA format', required=True)
 	parser.add_argument('-f','--agp', help='Output agp file for scaffolds', required=True)
 
 	args = parser.parse_args()
 
 	G = nx.read_gml(args.oriented_graph)
+	write_GFA(G,args.gfa)
+	sys.exit()
 	#G = nx.read_gml("small.gml")
 	#nx.write_gexf(G,'original.gexf')
 	pairmap = {}

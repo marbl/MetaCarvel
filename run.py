@@ -145,7 +145,7 @@ def main():
     if os.path.exists(args.dir+'/scaffolds.fasta') == False:
       #os.system('python layout.py -a '+ args.assembly + ' -g ' + args.dir+'/oriented.gml -s '+args.dir+'/seppairs -o '+args.dir+'/scaffolds.fa -f '+args.dir+'/scaffolds.agp -b '+args.dir+'/bubbles')
       try:
-        p = subprocess.check_output('python layout.py -a '+ args.assembly + ' -g ' + args.dir+'/oriented.gml -s '+args.dir+'/seppairs -o '+args.dir+'/scaffolds.fa -f '+args.dir+'/scaffolds.agp',shell=True)
+        p = subprocess.check_output('python layout.py -a '+ args.assembly + ' -g ' + args.dir+'/oriented.gml -s '+args.dir+'/seppairs -o '+args.dir+'/scaffolds.fa -f '+args.dir+'/scaffolds.agp -e '+args.dir+'/scaffold_graph.gfa',shell=True)
         print >> sys.stderr, time.strftime("%c")+':Final scaffolds written, Done!'
       except subprocess.CalledProcessError as err:
         print >> sys.stderr, time.strftime("%c")+': Failed to generate scaffold sequenes , terminating scaffolding....\n' + str(err.output)
