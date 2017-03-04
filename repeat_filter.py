@@ -56,7 +56,7 @@ mean = np.mean(centralities.values())
 stdev = np.std(centralities.values())
 
 for contig in centralities:
-	if centralities[contig] >= mean + 3*stdev:
+	if centralities[contig] >= mean + 3*stdev and mean + 3*stdev != 0:
 		repeats[contig] = 1
 
 p_coverage = np.percentile(contig_coverage.values(),75)
