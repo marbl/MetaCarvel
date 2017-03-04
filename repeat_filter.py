@@ -94,12 +94,13 @@ for contig in coverage_outliers:
 with open(sys.argv[2],'r') as f:
 	for line in f:
 		attrs = line.split()
+		dist = float(attrs[4])
 		if attrs[0] in repeats or attrs[2] in repeats:
 			continue
 		if attrs[0] in other_repeats or attrs[2] in other_repeats:
 			continue
-		if attrs[4] < 0:
-			if abs(attrs[4]) >= length[attrs[0]] or abs(attrs[4]) >= length[attrs[1]]:
+		if dist < 0:
+			if abs(dist) >= length[attrs[0]] or abs(dist) >= length[attrs[1]]:
 				continue
 			else:
 				print line

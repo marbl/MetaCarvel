@@ -302,7 +302,7 @@ def main():
 
 	G = nx.read_gml(args.oriented_graph)
 	write_GFA(G,args.gfa)
-	sys.exit()
+	#sys.exit()
 	#G = nx.read_gml("small.gml")
 	#nx.write_gexf(G,'original.gexf')
 	pairmap = {}
