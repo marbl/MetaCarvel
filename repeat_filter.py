@@ -100,7 +100,7 @@ with open(sys.argv[2],'r') as f:
 		if attrs[0] in other_repeats or attrs[2] in other_repeats:
 			continue
 		if dist < 0:
-			if abs(dist) >= contig_length[attrs[0]] or abs(dist) >= contig_length[attrs[1]]:
+			if abs(dist) >= contig_length[attrs[0]] or abs(dist) >= contig_length[attrs[2]]:
 				continue
 			else:
 				print line
