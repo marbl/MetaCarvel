@@ -34,8 +34,9 @@ skewed_edges = {}
 for node in G.nodes():
     s_count = 0
     for neighs in G.neighbors(node):
-        if contig_coverage[node] >= 2*contig_coverage[neighs]:
-            s_count += 1
+	if node in contig_coverage and neighs in contig_coverage:
+        	if contig_coverage[node] >= 2*contig_coverage[neighs]:
+            		s_count += 1
     skewed_edges[node] = s_count
 
 #centralities
