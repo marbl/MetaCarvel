@@ -105,4 +105,5 @@ with open(sys.argv[2],'r') as f:
 				continue
 			else:
 				print line.strip()
+				continue
 		print line.strip()	
