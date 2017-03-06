@@ -6,7 +6,7 @@ import operator
 import argparse
 
 
-revcompl = lambda x: ''.join([{'A':'T','C':'G','G':'C','T':'A','N':'N','R':'N','M':'N','Y':'N','S':'N','W':'N','K':'N','a':'t','c':'g','g':'c','t':'a',' ':'',}[B] for B in x][::-1])
+revcompl = lambda x: ''.join([{'A':'T','C':'G','G':'C','T':'A','N':'N','R':'N','M':'N','Y':'N','S':'N','W':'N','K':'N','a':'t','c':'g','g':'c','t':'a',' ':'','n':'n',}[B] for B in x][::-1])
 
 def parse_fasta(fh):
     fa = {}
