@@ -104,5 +104,5 @@ with open(sys.argv[2],'r') as f:
 			if abs(dist) >= contig_length[attrs[0]] or abs(dist) >= contig_length[attrs[2]]:
 				continue
 			else:
-				print line
+				print line.strip()
 		print line.strip()	
