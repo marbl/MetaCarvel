@@ -1,0 +1,167 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Bambus3 Pipeline &mdash; bambus3 1.0 documentation</title>
+    
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="bambus3 1.0 documentation" href="index.html" />
+    <link rel="prev" title="Welcome to Bambus3’s documentation!" href="index.html" />
+   
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head>
+  <body role="document">  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="bambus3-pipeline">
+<h1>Bambus3 Pipeline<a class="headerlink" href="#bambus3-pipeline" title="Permalink to this headline">¶</a></h1>
+<p>Bambus3 is a scaffolding program designed specifically to address the issues concerning the metagenomic data.
+The scaffolding algorithm consists of several steps. Bambus3 requires contig assembly fasta file, mapping of reads to contigs in BAM file and output directory as an input. It first analyzes the read to contig mapping and estimates the library insert size. Using these mappings, it generates a scaffold graph where nodes are contigs and edges are mate pairs mapped to two different contigs. This is done in <code class="code docutils literal"><span class="pre">libcorrect</span></code> program. Multiple links between two contigs are collapsed into a single link using <code class="code docutils literal"><span class="pre">bundler</span></code> program. After this, repeats in the graph are removed. High betweenness centrality nodes are identified using <code class="code docutils literal"><span class="pre">centrality</span></code> program and removed from the graph using <code class="code docutils literal"><span class="pre">repeat_filter.py</span></code> program. Contigs remaining after filtering repetitive contigs are assigned a unique orientation using <code class="code docutils literal"><span class="pre">orientcontigs</span></code> program. The bubbles caused due to polymorphic regions in the metagenome are identified using <code class="code docutils literal"><span class="pre">spqr</span></code> program. Once these bubbles are identified, they are collapsed and contig layout is performed in <code class="code docutils literal"><span class="pre">layout.py</span></code> program.</p>
+</div>
+<div class="section" id="installing-the-software">
+<h1>Installing the software<a class="headerlink" href="#installing-the-software" title="Permalink to this headline">¶</a></h1>
+<p>Bambus3 is open source and available on github. You need to run following steps to get it installed</p>
+<div class="code highlight-python"><div class="highlight"><pre><span></span>git clone https://github.com/marbl/bambus3
+cd bambus3
+make
+</pre></div>
+</div>
+<p>This would generate the executables required to run bambus3.</p>
+</div>
+<div class="section" id="preparing-the-data">
+<h1>Preparing the data<a class="headerlink" href="#preparing-the-data" title="Permalink to this headline">¶</a></h1>
+<p>In order to run Bambus3, you will need two files. First one is the contig assembly of the raw reads using your favorite metagenome assembly program.
+The second one is the alignment of raw paired end reads to assembled contigs using your favorite alignment program. We strongly recommend to map paired end reads as single end reads since aligner enforces the reads to map in the distances given by the library size. If you are using Bowtie2 for read mapping, we recommend aligning reads this way:</p>
+<div class="code highlight-python"><div class="highlight"><pre><span></span>bowtie2 -x idx -U forward_reads.fq | samtools view -bS &gt; alignment_1.bam
+bowtie2 -x idx -U reverse_reads.fq | samtools view -bS &gt; alignment_2.bam
+samtools alignment_total.bam alignment_1.bam alignment_2.bam
+samtools sort -n alignment_total.bam -o alignment_total_sorted.bam
+</pre></div>
+</div>
+<p>We need this file sorted by the read name and not the coordinates. You will also need to provide the output directory where you want your scaffolds to be written.</p>
+</div>
+<div class="section" id="running-bambus3">
+<h1>Running Bambus3<a class="headerlink" href="#running-bambus3" title="Permalink to this headline">¶</a></h1>
+<p>Before you run Bambus3, please make sure you have following dependencies: <a class="reference external" href="http://bowtie-bio.sourceforge.net/manual.shtml">samtools</a>, <a class="reference external" href="http://bedtools.readthedocs.io/en/latest/">bedtools</a> and <a class="reference external" href="https://networkx.github.io/">NetworkX</a>. After you have these dependencies, running Bambus3 is pretty straightforward. You would need to execute <code class="code docutils literal"><span class="pre">run.py</span></code> file.</p>
+<div class="code highlight-python"><div class="highlight"><pre><span></span>python run.py -h
+usage: run.py [-h] -a ASSEMBLY -m MAPPING -d DIR [-f FORCE] [-r REPEATS]
+              [-k KEEP] [-l LENGTH] [-b BSIZE]
+
+Bambus3: A scaffolding tool for metagenomic assemblies
+
+optional arguments:
+  -h, --help            show this help message and exit
+  -a ASSEMBLY, --assembly ASSEMBLY
+                        assembled contigs
+  -m MAPPING, --mapping MAPPING
+                        mapping of read to contigs in bam format
+  -d DIR, --dir DIR     output directory for results
+  -f FORCE, --force FORCE
+                        force re-run of pipeline, will remove any existing
+                        output
+  -r REPEATS, --repeats REPEATS
+                        To turn repeat detection on
+  -k KEEP, --keep KEEP  Set this to kepp temporary files in output directory
+  -l LENGTH, --length LENGTH
+                        Minimum length of contigs to consider for scaffolding
+  -b BSIZE, --bsize BSIZE
+                        Minium mate pair support between contigs to consider
+                        for scaffolding
+</pre></div>
+</div>
+<p>The mandatory inputs for this are the FASTA file for contig assembly, the alignment file and output directory. There are other options as well.
+<code class="code docutils literal"><span class="pre">-r</span></code> option lets you toggle the repeat detection process in the scaffolding pipeline. By default it is turned off, but you can provide <code class="code docutils literal"><span class="pre">-r</span> <span class="pre">true</span></code> parameter to include repeat detection. :code: <cite>-l</cite> option lets you set the minimum length of the contigs to consider for scaffolding. By default this is set to :code: 500. <code class="code docutils literal"><span class="pre">-b</span></code> option lets you set the minimum mate pair support between two contigs to consider for scaffolding. By default this is set to <code class="code docutils literal"><span class="pre">3</span></code>. Each step in the pipeline generates temporary files as intermediate outputs. If you want to retain these files, you need to set <code class="code docutils literal"><span class="pre">-k</span></code> option to <code class="code docutils literal"><span class="pre">true</span></code>. By default, these files will be removed.</p>
+</div>
+<div class="section" id="interpreting-the-output">
+<h1>Interpreting the output<a class="headerlink" href="#interpreting-the-output" title="Permalink to this headline">¶</a></h1>
+<p>Since Bambus3 consists of multiple steps, it generates some intermediate files. These files can be useful if you want to dig more into the analysis.
+The <code class="code docutils literal"><span class="pre">libcorrect</span></code> generates two output files: <code class="code docutils literal"><span class="pre">contig_links</span></code>, having a raw links between the contigs based on mate pairs and <code class="code docutils literal"><span class="pre">contig_coverage</span></code>, having a coverage information for each contig. The <code class="code docutils literal"><span class="pre">bundler</span></code> program uses <code class="code docutils literal"><span class="pre">contig_links</span></code> file, bundles the links and outputs them in the <code class="code docutils literal"><span class="pre">bundled_links</span></code> file in a tsv format and in the <code class="code docutils literal"><span class="pre">bundled_graph.gml</span></code> in the gml format. If repeat detection is chosen then that would generate a file with name <code class="code docutils literal"><span class="pre">bundled_links_filtered</span></code> which will have the bundled links corresponding to all the non-repetitive contigs. The <code class="code docutils literal"><span class="pre">orientcontigs</span></code> program takes the bundled links as an input and outputs a graph with only one orientation corresponding to each contig. This graph is written in two formats: <code class="code docutils literal"><span class="pre">oriented_links</span></code> in tsv format and <code class="code docutils literal"><span class="pre">oriented.gml</span></code> in a gml format. The <code class="code docutils literal"><span class="pre">spqr</span></code> program takes orientated graph as an input and produces a potential bubbles as an output in a file called <code class="code docutils literal"><span class="pre">seppairs</span></code>. The <code class="code docutils literal"><span class="pre">layout.py</span></code> produces three main files. One is <code class="code docutils literal"><span class="pre">scaffolds.fa</span></code>, represnting the scaffold sequences, <code class="code docutils literal"><span class="pre">scaffolds.agp</span></code>, representing scaffolds in an <a class="reference external" href="https://www.ncbi.nlm.nih.gov/assembly/agp/AGP_Specification/">AGP</a> format and <code class="code docutils literal"><span class="pre">scaffolds.gfa</span></code> representing scaffold graph in <a class="reference external" href="https://github.com/GFA-spec/GFA-spec">GFA</a> format.</p>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Bambus3 Pipeline</a></li>
+<li><a class="reference internal" href="#installing-the-software">Installing the software</a></li>
+<li><a class="reference internal" href="#preparing-the-data">Preparing the data</a></li>
+<li><a class="reference internal" href="#running-bambus3">Running Bambus3</a></li>
+<li><a class="reference internal" href="#interpreting-the-output">Interpreting the output</a></li>
+</ul>
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="index.html" title="previous chapter">Welcome to Bambus3&#8217;s documentation!</a></li>
+  </ul></li>
+</ul>
+</div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/tutorial.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2017, Jay Ghurye.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.3.5</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.7</a>
+      
+      |
+      <a href="_sources/tutorial.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>
