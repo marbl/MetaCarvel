@@ -25,16 +25,17 @@ def main():
 
     args = parser.parse_args()
     try:
-      from networkx import *
+      import networkx
     except ImportError:
       raise ImportError('Looks like you do not have networkx. Please rerun with networkx module installed.')
+      sys.exit(1)
     if not cmd_exists('samtools'):
       print >> sys.stderr, time.strftime("%c")+': Samtools does not exist in PATH. Terminating....\n'
-      sys.exit()
+      sys.exit(1)
 
     if not cmd_exists('bamToBed'):
       print >> sys.stderr, time.strftime("%c")+': Bedtools does not exist in PATH. Terminating....\n'
-      sys.exit()
+      sys.exit(1)
 
     if not os.path.exists(args.dir):
         os.makedirs(args.dir)
@@ -58,7 +59,7 @@ def main():
         except subprocess.CalledProcessError as err:
           os.system("rm " + args.dir+'/alignment.bed')
           print >> sys.stderr, time.strftime("%c")+': Failed in coverting bam file to bed format, terminating scaffolding....\n' + str(err.output)
-          sys.exit()
+          sys.exit(1)
     try:
       #os.system('samtools faidx '+args.assembly)
       p = subprocess.check_output('samtools faidx '+args.assembly,shell=True)
@@ -82,7 +83,7 @@ def main():
         except subprocess.CalledProcessError as err:
             os.system('rm '+args.dir+'/contig_links')
             print >> sys.stderr, time.strftime("%c")+': Failed in generate links from bed file, terminating scaffolding....\n' + str(err.output)
-            sys.exit()
+            sys.exit(1)
 
     print >> sys.stderr, time.strftime("%c")+':Started bulding of links between contigs'
     if os.path.exists(args.dir+'/bundled_links') == False:
@@ -94,7 +95,7 @@ def main():
           os.system('rm '+args.dir+'/bundled_links')
           os.system('rm '+args.dir+'/bundled_graph.gml')
           print >> sys.stderr, time.strftime("%c")+': Failed to bundle links, terminating scaffolding....\n' + str(err.output)
-          sys.exit()
+          sys.exit(1)
 
     if args.repeats:
       print >> sys.stderr, time.strftime("%c")+':Started finding and removing repeats'
@@ -104,7 +105,7 @@ def main():
 
       except subprocess.CalledProcessError as err:
         print >> sys.stderr, time.strftime("%c")+': Failed to find repeats, terminating scaffolding....\n' + str(err.output)
-        sys.exit()
+        sys.exit(1)
        #print './vc_algo -g '+ args.dir+'/bundled_graph.gml -r ' + args.dir+'/repeats -f 0.02'
       try:
         p = subprocess.check_output('./orientcontigs -l '+args.dir+'/bundled_links -c '+ args.dir+'/contig_length --bsize -o ' +args.dir+'/oriented.gml -p ' + args.dir+'/oriented_links -i '+args.dir+'/invalidated_counts',shell=True)
@@ -117,7 +118,7 @@ def main():
         p = subprocess.check_output('python repeat_filter.py '+args.dir+'/contig_coverage ' + args.dir+ '/bundled_links ' +args.dir+'/invalidated_counts ' + args.dir+'/repeats ' + args.dir+'/contig_length > '+args.dir+'/bundled_links_filtered' ,shell=True)
       except subprocess.CalledProcessError as err:
         print >> sys.stderr, time.strftime("%c")+': Failed to find repeats, terminating scaffolding....\n' + str(err.output)
-        sys.exit()
+        sys.exit(1)
       print >> sys.stderr, time.strftime("%c")+':Finished repeat finding and removal'
     else:
       os.system('mv '+args.dir+'/bundled_links ' + args.dir+'/bundled_links_filtered')
@@ -139,7 +140,7 @@ def main():
       print >> sys.stderr, time.strftime("%c")+':Finished finding spearation pairs'
     except subprocess.CalledProcessError as err:
       print >> sys.stderr, time.strftime("%c")+': Failed to decompose graph, terminating scaffolding....\n' + str(err.output)
-      sys.exit()
+      sys.exit(1)
     
     print >> sys.stderr, time.strftime("%c")+':Finding the layout of contigs'
     if os.path.exists(args.dir+'/scaffolds.fasta') == False:
@@ -150,6 +151,18 @@ def main():
       except subprocess.CalledProcessError as err:
         print >> sys.stderr, time.strftime("%c")+': Failed to generate scaffold sequenes , terminating scaffolding....\n' + str(err.output)
 
-
+    if not args.keep:
+      os.system("rm "+args.dir+'/contig_length')
+      os.system("rm "+args.dir+'/contig_links')
+      os.system("rm "+args.dir+'/contig_coverage')
+      os.system("rm "+args.dir+'/bundled_links')
+      os.system("rm "+args.dir+'/bundled_links_filtered')
+      os.system("rm "+args.dir+'/bundled_graph.gml')
+      os.system("rm "+args.dir+'/invalidated_counts')
+      os.system("rm "+args.dir+'/repeats')
+      os.system("rm "+args.dir+'/oriented_links')
+      os.system("rm "+args.dir+'/oriented.gml')
+      os.system("rm "+args.dir+'/seppairs')
+      os.system("rm "+args.dir+'/alignment.bed')
 if __name__ == '__main__':
     main()
