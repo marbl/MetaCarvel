@@ -23,8 +23,8 @@ The second one is the alignment of raw paired end reads to assembled contigs usi
 
 .. code::
 
-	bowtie2 -x idx -U forward_reads.fq | samtools view -bS > alignment_1.bam
-	bowtie2 -x idx -U reverse_reads.fq | samtools view -bS > alignment_2.bam
+	bowtie2 -x idx -U forward_reads.fq | samtools view -bS - > alignment_1.bam
+	bowtie2 -x idx -U reverse_reads.fq | samtools view -bS - > alignment_2.bam
 	samtools alignment_total.bam alignment_1.bam alignment_2.bam
 	samtools sort -n alignment_total.bam -o alignment_total_sorted.bam
 We need this file sorted by the read name and not the coordinates. You will also need to provide the output directory where you want your scaffolds to be written. 
