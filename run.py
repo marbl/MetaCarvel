@@ -22,6 +22,7 @@ def main():
     parser.add_argument("-k","--keep", help="Set this to keep temporary files in output directory",default=False)
     parser.add_argument("-l","--length",help="Minimum length of contigs to consider for scaffolding",default=500)
     parser.add_argument("-b","--bsize",help="Minimum mate pair support between contigs to consider for scaffolding",default=3)
+    parser.add_argument("-v",'--visualization',help="To generate .db file for AsmViz visualization program",default=False)
 
     args = parser.parse_args()
     try:
@@ -99,13 +100,14 @@ def main():
 
     if args.repeats:
       print >> sys.stderr, time.strftime("%c")+':Started finding and removing repeats'
-      try:
+      os.system("touch "+args.dir+'/repeats')
+	#try:
        #os.system('./vc_algo -g '+ args.dir+'/bundled_graph.gml -r ' + args.dir+'/repeats -f 0.02')
-        p = subprocess.check_output('./centrality -g '+ args.dir+'/bundled_graph.gml -r ' + args.dir+'/repeats -f 0.02',shell=True)
+        #p = subprocess.check_output('./centrality -g '+ args.dir+'/bundled_graph.gml -r ' + args.dir+'/repeats -f 0.02',shell=True)
 
-      except subprocess.CalledProcessError as err:
-        print >> sys.stderr, time.strftime("%c")+': Failed to find repeats, terminating scaffolding....\n' + str(err.output)
-        sys.exit(1)
+      #except subprocess.CalledProcessError as err:
+       # print >> sys.stderr, time.strftime("%c")+': Failed to find repeats, terminating scaffolding....\n' + str(err.output)
+        #sys.exit(1)
        #print './vc_algo -g '+ args.dir+'/bundled_graph.gml -r ' + args.dir+'/repeats -f 0.02'
       try:
         p = subprocess.check_output('./orientcontigs -l '+args.dir+'/bundled_links -c '+ args.dir+'/contig_length --bsize -o ' +args.dir+'/oriented.gml -p ' + args.dir+'/oriented_links -i '+args.dir+'/invalidated_counts',shell=True)
@@ -149,7 +151,14 @@ def main():
         p = subprocess.check_output('python layout.py -a '+ args.assembly + ' -g ' + args.dir+'/oriented.gml -s '+args.dir+'/seppairs -o '+args.dir+'/scaffolds.fa -f '+args.dir+'/scaffolds.agp -e '+args.dir+'/scaffold_graph.gfa',shell=True)
         print >> sys.stderr, time.strftime("%c")+':Final scaffolds written, Done!'
       except subprocess.CalledProcessError as err:
-        print >> sys.stderr, time.strftime("%c")+': Failed to generate scaffold sequenes , terminating scaffolding....\n' + str(err.output)
+        print >> sys.stderr, time.strftime("%c")+': Failed to generate scaffold sequences , terminating scaffolding....\n' + str(err.output)
+
+    if args.visualization:
+      print >> sys.stderr, time.strftime("%c")+':Generating visualization files'
+      try:
+        p = subprocess.check_output('python AsmViz/graph_collator/collate.py -i '+args.dir+'/oriented.gml -b '+args.dir+'/seppairs -d '+args.dir +' -o asmviz')
+      except subprocess.CalledProcessError as err:
+        print >> sys.stderr, time.strftime("%c")+': Failed to generate visualization files , terminating ....\n' + str(err.output)
 
     if not args.keep:
       os.system("rm "+args.dir+'/contig_length')
