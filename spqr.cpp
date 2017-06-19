@@ -354,7 +354,7 @@ int main(int argc, char* argv[])
 {	
 	cmdline ::parser pr;
     pr.add<string>("oriented_graph",'l',"list of oriented links",true,"");
-    pr.add<string>("output",'o',"output file tow write sep pairs",true,"");
+    pr.add<string>("output",'o',"output file to write separation pairs to",true,"");
     pr.parse_check(argc,argv);
     Graph G;
     ifstream linkfile(getCharExpr(pr.get<string>("oriented_graph")));
