@@ -1,21 +1,21 @@
-# Bambus 3 - Scaffolder for metagenomes
+# MetaCarvel - Scaffolder for metagenomes
 
-Bambus3 is an updated version of previous metagenome scaffolder Bambus 2. To run Bambus 3, you will need [Samtools](http://samtools.sourceforge.net), [Bedtools](http://bedtools.readthedocs.io/en/latest/), and [Networkx](https://networkx.github.io/).
+MetaCarvel is an updated version of previous metagenome scaffolder Bambus 2. To run MetaCarvel, you will need [Samtools](http://samtools.sourceforge.net), [Bedtools](http://bedtools.readthedocs.io/en/latest/), and [Networkx](https://networkx.github.io/).
 
 To install the software, please execute following commands:
 ```
-cd bambus3
+cd metacarvel
 make
 ```
 
-To run bambus3, run the following;
+To run MetaCarvel, run the following;
 
 ```
 python run.py -h
 usage: run.py [-h] -a ASSEMBLY -m MAPPING -d DIR [-f FORCE] [-r REPEATS]
               [-k KEEP] [-l LENGTH] [-b BSIZE]
 
-Bambus3: A scaffolding tool for metagenomic assemblies
+MetaCarvel: A scaffolding tool for metagenomic assemblies
 
 optional arguments:
   -h, --help            show this help message and exit
