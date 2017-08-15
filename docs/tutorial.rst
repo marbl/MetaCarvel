@@ -10,11 +10,11 @@ MetaCarvel is open source and available on github. You need to run following ste
 
 .. code::
 
-	git clone https://github.com/marbl/bambus3
-	cd bambus3
+	git@github.com:marbl/MetaCarvel.git
+	cd MetaCarvel
 	make
 
-This would generate the executables required to run bambus3.
+This would generate the executables required to run MetaCarvel. 
 
 Preparing the data
 ===================

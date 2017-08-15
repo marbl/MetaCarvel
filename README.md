@@ -2,9 +2,11 @@
 
 MetaCarvel is an updated version of previous metagenome scaffolder Bambus 2. To run MetaCarvel, you will need [Samtools](http://samtools.sourceforge.net), [Bedtools](http://bedtools.readthedocs.io/en/latest/), and [Networkx](https://networkx.github.io/).
 
+The detailed documentation and tutorial to install and run MetaCarvel can be found [here](http://bambus3.readthedocs.io/en/latest/).
+
 To install the software, please execute following commands:
 ```
-cd metacarvel
+cd MetaCarvel
 make
 ```
 
