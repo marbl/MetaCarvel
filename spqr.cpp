@@ -414,14 +414,12 @@ int main(int argc, char* argv[])
         //Link l(linkid,a,b,c,d,e,f);
         node first = revid2contig[a];
         node second = revid2contig[c];
-       	cout<<first<<"\t"<<second<<endl;
+       	//cout<<first<<"\t"<<second<<endl;
        	edge x = G.newEdge(node(first),node(second));
        	//cout<<"edge added"<<endl;
         //contigs2bundle[a+c] = g;
     }
 
-	cerr<<"Nodes: "<<G.numberOfNodes()<<endl;
-	cerr<<"Edges: "<<G.numberOfEdges()<<endl;
 	// GraphAttributes GA(G, GraphAttributes::nodeId);
 	// bool ok = GraphIO::readGML(GA,G,"test_graph/oriented.gml");
 	//since this is giving an error, lets just read tsv file and construct graph ourself
@@ -442,7 +440,7 @@ int main(int argc, char* argv[])
 	int nrCC = 0;
 	NodeArray<int> node2cc(G);
 	nrCC = connectedComponents(G, node2cc);
-	cerr<<"Number of connected components = "<<nrCC<<endl;
+	//cerr<<"Number of connected components = "<<nrCC<<endl;
 
 	node startNodes[nrCC];
 	int index = 0;
@@ -467,7 +465,7 @@ int main(int argc, char* argv[])
 	{
 		BCTree bc(G,startNodes[j]);
 		BCTree *p_bct = &bc;
-		cerr<<"Number of Biconnected Components = "<<bc.numberOfBComps()<<endl;
+		//cerr<<"Number of Biconnected Components = "<<bc.numberOfBComps()<<endl;
 
 		if(bc.numberOfBComps() == 0)
 		{
@@ -479,7 +477,7 @@ int main(int argc, char* argv[])
 
 
 		const Graph &auxgraph = p_bct->auxiliaryGraph();
-		cerr<<"graph made"<<endl;
+		//cerr<<"graph made"<<endl;
 		node bcTreeNode;
 		forall_nodes(bcTreeNode,bc.bcTree())
 		{
@@ -488,7 +486,7 @@ int main(int argc, char* argv[])
 			{
 				GraphCopy GC(p_bct->auxiliaryGraph());
 				memberNodes = getBiComponent(&GC,p_bct,bcTreeNode);
-				cerr<<memberNodes.size()<<endl;
+				//cerr<<memberNodes.size()<<endl;
 				Bicomponent bicomp(memberNodes);
 				//cer<<"membernodes found"<<endl;
 				//Now Generate SPQR tree for this component
@@ -499,14 +497,14 @@ int main(int argc, char* argv[])
 		        if(!biconnected || nrEdges <= 2 || !loopfree) 
 		        {
 		        	continue;
-                    cerr << "Graph is not a valid input for SPQR-tree decomposition!" << endl;
-                    cerr << "Reason(s):" << endl;
-                    if (!biconnected)
-                            cerr << "-> Graph is not biconnected" << endl;
-                    if (nrEdges <= 2)
-                            cerr << "-> Graph has "<< nrEdges << " edge(s). Should be more than 2." << endl;
-                    if (!loopfree)
-                            cerr << "-> Graph is not loop free" << endl;
+                    // cerr << "Graph is not a valid input for SPQR-tree decomposition!" << endl;
+                    // cerr << "Reason(s):" << endl;
+                    // if (!biconnected)
+                    //         cerr << "-> Graph is not biconnected" << endl;
+                    // if (nrEdges <= 2)
+                    //         cerr << "-> Graph has "<< nrEdges << " edge(s). Should be more than 2." << endl;
+                    // if (!loopfree)
+                    //         cerr << "-> Graph is not loop free" << endl;
            	
 		        }
 		        getCutVertexPair(GC,bcTreeNode,bc,j,bicomp);

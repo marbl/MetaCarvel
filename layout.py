@@ -29,50 +29,67 @@ def parse_fasta(fh):
 
 def test_pair(G,source,sink,members):
 
-	# if G.has_edge(source,sink) or G.has_edge(sink,source):
-	# 	return []
+    # if G.has_edge(source,sink) or G.has_edge(sink,source):
+    #     return []
+    # print source
+    # print sink
+    for u,v in G.out_edges(sink):
+        if v in members:
+            return False
+    visited = {}
+    visited_nodes = {}
+    source = str(source)
+    sink = str(sink)
+    # visited_nodes = set()
+    #visited_nodes.add(source)
+    visited_nodes[source] = True
+    Q = deque()
+    at_sink = False
+    for edge in G.out_edges(source):
+        Q.appendleft(edge)
+        visited[edge] = True
 
-	visited = {}
-	visited_nodes = {}
-	# visited_nodes = set()
-	# visited_nodes.add(source)
-	visited_nodes[source] = True
-	Q = deque()
-	at_sink = False
-	for edge in G.out_edges(source):
-		Q.appendleft(edge)
-		visited[edge] = True
+    #print len(Q)
+    while not len(Q) == 0:
+        #print len(Q)
+        # if int(source) == 10 and int(sink) == 11:
+        #     print Q
+        go_ahead = True
+        curr_edge = Q.pop()
+        u = curr_edge[0]
+        v = curr_edge[1]
+        if v not in members:
+            return False
+        visited_nodes[v] = True
+        if v == sink:
+            at_sink = True
+            continue
+        # else:
+        #     #is_sink = True
+        #     if len(G.out_edges(v)) == 0:
+        #         at_sink = False
+        #     for v,w in G.out_edges(v):
+        #         if w in members:
+        #             at_sink = False
+        #             break
+        for edge in G.in_edges(v):
+            if edge not in visited:
+                go_ahead = False
+                break
 
-	while not len(Q) == 0:
-		#print len(Q)
-		go_ahead = True
-		curr_edge = Q.pop()
-		u = curr_edge[0]
-		v = curr_edge[1]
-		if v not in members:
-			return False
-		visited_nodes[v] = True
-		if v == sink:
-			at_sink = True
-			continue
-		for edge in G.in_edges(v):
-			if edge not in visited:
-				go_ahead = False
-				break
+        if go_ahead:
+            visited[edge] = True
+            for edge in G.out_edges(v):
+                if edge not in visited:
+                    Q.appendleft(edge)
+                    visited[edge] = True
 
-		if go_ahead:
-			visited[edge] = True
-			for edge in G.out_edges(v):
-				if edge not in visited:
-					Q.appendleft(edge)
-					visited[edge] = True
-	
-	
-	
-	if at_sink:
-		return True
-	else:
-		return False
+
+
+    if at_sink and len(visited_nodes) == len(members):
+        return True
+    else:
+        return False
 
 
 '''
@@ -297,9 +314,10 @@ def main():
 	parser.add_argument('-o','--output', help='Output file for scaffold sequences', required=True)
 	parser.add_argument('-e','--gfa', help='Output file for graph in GFA format', required=True)
 	parser.add_argument('-f','--agp', help='Output agp file for scaffolds', required=True)
+	parser.add_argument('-b','--bub', help='Output bubbles', required=True)
 
 	args = parser.parse_args()
-
+	bub_output = open(args.bub,'w')
 	G = nx.read_gml(args.oriented_graph)
 	write_GFA(G,args.gfa)
 	#sys.exit()
@@ -377,6 +395,7 @@ def main():
 		res = test_pair(G,contigs[0],contigs[1],pairmap[key])
 		
 		if res:
+			
 			cnt += 1
 			#validated[contigs[0]] = 1
 			source_and_sinks[contigs[0]] = 1
@@ -420,6 +439,10 @@ def main():
 				# print paths
 				cnt += 1
 				bubble_to_graph[key] = subg
+				line = ''
+				for each in subg.nodes():
+					line += str(each)+'\t'
+				bub_output.write(line+'\n')
 				valid_source_sink.append(max_pair)
 				source[max_pair.split('$')[0]] = 1
 				sink[max_pair.split('$')[1]] = 1
@@ -481,6 +504,7 @@ def main():
 				if G.has_edge(t,s):
 					data = G.get_edge_data(t,s)
 					G_new.add_edge(source_sink_to_comp[t],source_sink_to_comp[s],data)
+	
 	for node in G_new.nodes(data=True):
 		if node[0] in node_info:
 			info = node_info[node[0]]
@@ -550,10 +574,12 @@ def main():
 				if small_subg.degree(node) == 1:
 					p.append(node)
 
-
+			# if 'k99_221860$E' in small_subg.nodes():
+			# 	print small_subg.edges()
 			if len(p) == 2:
 				path = nx.shortest_path(small_subg,p[0],p[1])
 
+				#print path
 				#if path has a bubble node, insert the contigs on the heaviest path on the bubble
 				new_path = []
 				new_path_ind = 0
@@ -579,12 +605,14 @@ def main():
 						continue
 						
 					heaviest = bubble_paths[0]
+					#print "HEAVIEST: " + str(heaviest)
 					if len(new_path) > 0:
 						# print new_path[new_path_ind-1].split('$')[0]
 						# print new_path
 						if G.has_edge(new_path[new_path_ind-1].split('$')[0],heaviest[0]):
 							continue
 						else:
+							#print 'here'
 							heaviest.reverse()
 
 					for each in heaviest:
@@ -620,8 +648,8 @@ def main():
 				primary_contigs.append(new_path)
 				#print new_path
 
-	print len(primary_contigs)
-	print len(alternative_contigs)
+	# print len(primary_contigs)
+	# print alternative_contigs
 	assembly = open(args.assembly,'r')
 	sequences = parse_fasta(assembly.readlines())
 	ofile = open(args.output,'w')
@@ -651,7 +679,7 @@ def main():
 			scaffolded[curr.split('$')[0]] = True
 			scaffolded[next.split('$')[0]] = True
 			contig = curr.split('$')[0]
-			line += ('\tW\t' + contig +'\t1\t'+str(curr_len)+'\t')
+			line += ('W\t' + contig +'\t1\t'+str(curr_len)+'\t')
 			start = curr.split('$')[1]
 			end = next.split('$')[1]
 			if start == 'B' and end == 'E':
@@ -682,7 +710,7 @@ def main():
 		curr_contig = ''
 
 		for i in xrange(0,len(scaffold) - 1,2):
-			line += 'scaffold_'+str(scaffold_id)
+			line += 'scaffold_'+str(scaffold_id)+'_variant'
 			line += '\t'
 			line += str(begin) +'\t'
 			curr = scaffold[i]
@@ -697,7 +725,7 @@ def main():
 			scaffolded[curr.split('$')[0]] = True
 			scaffolded[next.split('$')[0]] = True
 			contig = curr.split('$')[0]
-			line += ('\tW\t' + contig +'\t1\t'+str(curr_len)+'\t')
+			line += ('W\t' + contig +'\t1\t'+str(curr_len)+'\t')
 			start = curr.split('$')[1]
 			end = next.split('$')[1]
 			if start == 'B' and end == 'E':
@@ -721,6 +749,13 @@ def main():
 		if contig not in scaffolded:
 			scaff_string = sequences[contig]
 			chunks = [scaff_string[i:i+80] for i in xrange(0,len(scaff_string),80)]
+			line = ''
+			line += 'scaffold_'+str(scaffold_id)+'\t'
+			line += '0\t'
+			line += str(len(scaff_string))+'\t'
+			line += '1\t'
+			line += 'W\t' + contig +'\t1\t' + str(len(scaff_string)) + '\t+'
+			agpfile.write(line+'\n')
 			ofile.write('>scaffold_'+str(scaffold_id)+'\n')
 			for chunk in chunks:
 				ofile.write(chunk+'\n')
