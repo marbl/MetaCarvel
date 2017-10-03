@@ -391,6 +391,7 @@ def main():
 				bubble_to_graph[str(valid_bubble_id)] = subg
 				valid_bubble_id += 1
 				line = ''
+				line += contigs[0]+'\t'+contigs[1]+'\t'
 				for each in subg.nodes():
 					line += str(each)+'\t'
 				bub_output.write(line+'\n')
@@ -414,6 +415,7 @@ def main():
 					bubble_to_graph[str(valid_bubble_id)] = subg
 					valid_bubble_id += 1
 					line = ''
+					line += contigs[1]+'\t'+contigs[0]+'\t'
 					for each in subg.nodes():
 						line += str(each)+'\t'
 					bub_output.write(line+'\n')
