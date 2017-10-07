@@ -354,7 +354,8 @@ int main(int argc, char* argv[])
 {	
 	cmdline ::parser pr;
     pr.add<string>("oriented_graph",'l',"list of oriented links",true,"");
-    pr.add<string>("output",'o',"output file tow write sep pairs",true,"");
+    pr.add<string>("output",'o',"output file to write separation pairs to",
+        true,"");
     pr.parse_check(argc,argv);
     Graph G;
     ifstream linkfile(getCharExpr(pr.get<string>("oriented_graph")));
@@ -442,18 +443,20 @@ int main(int argc, char* argv[])
 	nrCC = connectedComponents(G, node2cc);
 	//cerr<<"Number of connected components = "<<nrCC<<endl;
 
-	node startNodes[nrCC];
-	int index = 0;
+	// initialize all elements in startNodes to NULL at first
+	// then iterate through all nodes in the graph, ensuring that each
+	// connected component has a corresponding startNode given
+	node startNodes[nrCC] = {NULL};
+	int index;
 	node n;
 	forall_nodes(n, G) 
 	{
-		if (node2cc[n] == index)
-		{
+		index = node2cc[n];
+		if (startNodes[index] == NULL) {
+			// if no startNode is given for n's current connected component,
+			// assign n as the startNode for its connected component
 			startNodes[index] = n;
-			index++;
 		}
-		if (index == nrCC)
-			break;
 	}	
 	set<int> memberNodes;
 	unordered_map<int,int> sk2orig; // node mapping
