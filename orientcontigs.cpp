@@ -222,7 +222,7 @@ ofstream invalidfile;
 
 int findorientation(string node_to_orient)
 {
-    cerr<<"finding orientation for node "<<node_to_orient<<endl;
+    //cerr<<"finding orientation for node "<<node_to_orient<<endl;
     int curr_fow = 0, curr_rev = 0;
     if(adjacency.find(node_to_orient) != adjacency.end())
     {
@@ -322,7 +322,7 @@ int findorientation(string node_to_orient)
 void invalidatelinks(string v,int orientation)
 { 
     int count = 0;
-    cerr<<"invalidating..."<<v<<endl;
+    //cerr<<"invalidating..."<<v<<endl;
     if(adjacency.find(v) != adjacency.end())
     {
         vector<Link> neighbors = adjacency[v];

@@ -58,11 +58,12 @@ void parse_bed(string path)
 		BedRecord rec(contig,start,end,strand);
 		if(read[read.length() -1 ] == '1')
 		{
-			first_in_pair[read.substr(0,read.length()-2)] = rec;
+            //cout<<read.substr(0,read.length()-3)<<endl;
+			first_in_pair[read.substr(0,read.length()-3)] = rec;
 		}
 		else
 		{
-			second_in_pair[read.substr(0,read.length()-2)] = rec;
+			second_in_pair[read.substr(0,read.length()-3)] = rec;
 		}
 
 	}
@@ -249,8 +250,14 @@ int main(int argc, char* argv[])
 	double sum = std::accumulate(insert_sizes.begin(), insert_sizes.end(), 0.0);
 	double mean = sum / insert_sizes.size();
 
-	double sq_sum = std::inner_product(insert_sizes.begin(), insert_sizes.end(), insert_sizes.begin(), 0.0);
-	double stdev = std::sqrt(sq_sum / insert_sizes.size() - mean * mean);
+	cerr<<"Total Links used for estimation = "<<insert_sizes.size()<<endl;
+	//double sq_sum = std::inner_product(insert_sizes.begin(), insert_sizes.end(), insert_sizes.begin(), 0.0);
+	double dev = 0;
+	for(int i = 0;i < insert_sizes.size();i++)
+	{
+		dev += pow(insert_sizes[i] - mean, 2);
+	}
+	double stdev = sqrt(dev/insert_sizes.size());
 	cerr<<"Mean = "<<mean<<endl;
 	cerr<<"Stdev = "<<stdev<<endl;
 	//calculate coverage
