@@ -13,8 +13,8 @@ make
 To run MetaCarvel, run the following;
 
 ```
-python run.py -h
-usage: run.py [-h] -a ASSEMBLY -m MAPPING -d DIR [-f FORCE] [-r REPEATS]
+python run_new.py -h
+usage: run_new.py [-h] -a ASSEMBLY -m MAPPING -d DIR [-f FORCE] [-r REPEATS]
               [-k KEEP] [-l LENGTH] [-b BSIZE]
 
 MetaCarvel: A scaffolding tool for metagenomic assemblies
