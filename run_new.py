@@ -99,79 +99,66 @@ def main():
           sys.exit(1)
 
     if args.repeats:
-      print >> sys.stderr, time.strftime("%c")+':Started finding and removing repeats'
-      os.system("touch "+args.dir+'/repeats')
-     # try:
-     #  #os.system('./vc_algo -g '+ args.dir+'/bundled_graph.gml -r ' + args.dir+'/repeats -f 0.02')
-     #   p = subprocess.check_output(bin+'/centrality -g '+ args.dir+'/bundled_graph.gml -r ' + args.dir+'/repeats -f 0.02',shell=True)
+        print >> sys.stderr, time.strftime("%c")+':Started finding and removing repeats'
+        try:
+            p = subprocess.check_output(bin+'/orientcontigs -l '+args.dir+'/bundled_links -c '+ args.dir+'/contig_length --bsize -o ' +args.dir+'/oriented.gml -p ' + args.dir+'/oriented_links -i '+args.dir+'/invalidated_counts',shell=True)
 
-     # except subprocess.CalledProcessError as err:
-     #   print >> sys.stderr, time.strftime("%c")+': Failed to find repeats, terminating scaffolding....\n' + str(err.output)
-     #   sys.exit(1)
-     #  #print './vc_algo -g '+ args.dir+'/bundled_graph.gml -r ' + args.dir+'/repeats -f 0.02'
-     # try:
-     #   p = subprocess.check_output(bin+'/orientcontigs -l '+args.dir+'/bundled_links -c '+ args.dir+'/contig_length --bsize -o ' +args.dir+'/oriented.gml -p ' + args.dir+'/oriented_links -i '+args.dir+'/invalidated_counts',shell=True)
+        except subprocess.CalledProcessError as err:
+            print >> sys.stderr, time.strftime("%c") + ': Failed to find repeats, terminating scaffolding...\n' + str(err.output)
 
-     # except subprocess.CalledProcessError as err:
-     #   print >> sys.stderr, time.strftime("%c") + ': Failed to find repeats, terminating scaffolding...\n' + str(err.output)
-
-      try:
-        #os.system('python remove_repeats.py -l '+ args.dir+'/bundled_links -r ' + args.dir+'/repeats -o '+ args.dir+'/bundled_links_filtered -c '+args.dir+'/contig_coverage -s '+args.dir+'/contig_length')
-        p = subprocess.check_output('python '+bin+'/centrality.py  -g '+args.dir+'/bundled_links -l ' + args.dir+ '/contig_length > '+args.dir+'/bundled_links_filtered' ,shell=True)
-      except subprocess.CalledProcessError as err:
-        print >> sys.stderr, time.strftime("%c")+': Failed to find repeats, terminating scaffolding....\n' + str(err.output)
-        sys.exit(1)
-      print >> sys.stderr, time.strftime("%c")+':Finished repeat finding and removal'
+    	try:
+		p = subprocess.check_output('python '+bin+'/centrality.py  -g '+args.dir+'/bundled_links -l ' + args.dir+ '/contig_length -o  '+args.dir+'/high_centrality.txt' ,shell=True)
+   	except subprocess.CalledProcessError as err:
+            	print >> sys.stderr, time.strftime("%c")+': Failed to find repeats, terminating scaffolding....\n' + str(err.output)
+            	sys.exit(1)
+    
+        try:
+            	p = subprocess.check_output('python '+bin+'/repeat_filter.py  '+args.dir+'/contig_coverage ' + args.dir+ '/bundled_links ' + args.dir+'//invalidated_counts ' + args.dir+'/high_centrality.txt ' + args.dir+ '/contig_length '+ args.dir+'/repeats > ' + args.dir+'//bundled_links_filtered',shell=True)
+	except subprocess.CalledProcessError as err:
+            print >> sys.stderr, time.strftime("%c")+': Failed to find repeats, terminating scaffolding....\n' + str(err.output)
+            sys.exit(1)
+        print >> sys.stderr, time.strftime("%c")+':Finished repeat finding and removal'
     else:
-      os.system('mv '+args.dir+'/bundled_links ' + args.dir+'/bundled_links_filtered')
-
-    print >> sys.stderr, time.strftime("%c")+':Started orienting the contigs'
+        os.system('mv '+args.dir+'/bundled_links ' + args.dir+'/bundled_links_filtered')                                                                                                                                                                                                          
+	print >> sys.stderr, time.strftime("%c")+':Started orienting the contigs'
     # if os.path.exists(args.dir+'/oriented_links') == False:
-      #os.system('./orientcontigs -l '+args.dir+'/bundled_links_filtered -c '+ args.dir+'/contig_length --bsize -o ' +args.dir+'/oriented.gml -p ' + args.dir+'/oriented_links' )
+      #os.system('./orientcontigs -l '+args.dir+'/bundled_links_filtered -c '+ args.dir+'/contig_length --bsize -o ' +args.dir+'/oriented.gml -p ' + args.dir+'/oriented_links' )	
     try:
-      p = subprocess.check_output(bin+'/orientcontigs -l '+args.dir+'/bundled_links_filtered -c '+ args.dir+'/contig_length --bsize -o ' +args.dir+'/oriented.gml -p ' + args.dir+'/oriented_links -i '+args.dir+'/invalidated_counts',shell=True)
-      print >> sys.stderr, time.strftime("%c")+':Finished orienting the contigs'
+	    p = subprocess.check_output(bin+'/orientcontigs -l '+args.dir+'/bundled_links_filtered -c '+ args.dir+'/contig_length --bsize -o ' +args.dir+'/oriented.gml -p ' + args.dir+'/oriented_links -i '+args.dir+'/invalidated_counts',shell=True)
+	    print >> sys.stderr, time.strftime("%c")+':Finished orienting the contigs'
     except subprocess.CalledProcessError:
-      print >> sys.stderr, time.strftime("%c")+': Failed to Orient contigs, terminating scaffolding....'
+	    print >> sys.stderr, time.strftime("%c")+': Failed to Orient contigs, terminating scaffolding....'
 
     print >> sys.stderr, time.strftime("%c")+':Started finding separation pairs'
-    #if os.path.exists(args.dir+'/seppairs') == False:
-    #os.system('./spqr -l ' + args.dir+'/oriented_links -o ' + args.dir+'/seppairs')
+	#if os.path.exists(args.dir+'/seppairs') == False:
+	#os.system('./spqr -l ' + args.dir+'/oriented_links -o ' + args.dir+'/seppairs')
     try:
-      p = subprocess.check_output(bin+'/spqr -l ' + args.dir+'/oriented_links -o ' + args.dir+'/seppairs',shell=True)
-      print >> sys.stderr, time.strftime("%c")+':Finished finding spearation pairs'
+	    p = subprocess.check_output(bin+'/spqr -l ' + args.dir+'/oriented_links -o ' + args.dir+'/seppairs',shell=True)
+	    print >> sys.stderr, time.strftime("%c")+':Finished finding spearation pairs'
     except subprocess.CalledProcessError as err:
-      print >> sys.stderr, time.strftime("%c")+': Failed to decompose graph, terminating scaffolding....\n' + str(err.output)
-      sys.exit(1)
+	    print >> sys.stderr, time.strftime("%c")+': Failed to decompose graph, terminating scaffolding....\n' + str(err.output)
+	    sys.exit(1)
 
     print >> sys.stderr, time.strftime("%c")+':Finding the layout of contigs'
     if os.path.exists(args.dir+'/scaffolds.fasta') == False:
-      #os.system('python layout.py -a '+ args.assembly + ' -g ' + args.dir+'/oriented.gml -s '+args.dir+'/seppairs -o '+args.dir+'/scaffolds.fa -f '+args.dir+'/scaffolds.agp -b '+args.dir+'/bubbles')
-      try:
-        p = subprocess.check_output('python '+bin+'/layout.py -a '+ args.assembly +' -b '+args.dir+'/bubbles.txt' +' -g ' + args.dir+'/oriented.gml -s '+args.dir+'/seppairs -o '+args.dir+'/scaffolds.fa -f '+args.dir+'/scaffolds.agp -e '+args.dir+'/scaffold_graph.gfa',shell=True)
-        print >> sys.stderr, time.strftime("%c")+':Final scaffolds written, Done!'
-      except subprocess.CalledProcessError as err:
-        print >> sys.stderr, time.strftime("%c")+': Failed to generate scaffold sequences , terminating scaffolding....\n' + str(err.output)
-
-    if args.visualization:
-      print >> sys.stderr, time.strftime("%c")+':Generating visualization files'
-      try:
-        p = subprocess.check_output('python AsmViz/graph_collator/collate.py -i '+args.dir+'/oriented.gml -b '+args.dir+'/seppairs -d '+args.dir +' -o asmviz')
-      except subprocess.CalledProcessError as err:
-        print >> sys.stderr, time.strftime("%c")+': Failed to generate visualization files , terminating ....\n' + str(err.output)
+	    try:
+		    p = subprocess.check_output('python '+bin+'/layout.py -a '+ args.assembly +' -b '+args.dir+'/bubbles.txt' +' -g ' + args.dir+'/oriented.gml -s '+args.dir+'/seppairs -o '+args.dir+'/scaffolds.fa -f '+args.dir+'/scaffolds.agp -e '+args.dir+'/scaffold_graph.gfa',shell=True)
+		    print >> sys.stderr, time.strftime("%c")+':Final scaffolds written, Done!'
+	    except subprocess.CalledProcessError as err:
+		    print >> sys.stderr, time.strftime("%c")+': Failed to generate scaffold sequences , terminating scaffolding....\n' + str(err.output)
 
     if not args.keep:
-      os.system("rm "+args.dir+'/contig_length')
-      os.system("rm "+args.dir+'/contig_links')
-      os.system("rm "+args.dir+'/contig_coverage')
-      os.system("rm "+args.dir+'/bundled_links')
-      os.system("rm "+args.dir+'/bundled_links_filtered')
-      os.system("rm "+args.dir+'/bundled_graph.gml')
-      os.system("rm "+args.dir+'/invalidated_counts')
-      os.system("rm "+args.dir+'/repeats')
-      os.system("rm "+args.dir+'/oriented_links')
-      os.system("rm "+args.dir+'/oriented.gml')
-      os.system("rm "+args.dir+'/seppairs')
-      os.system("rm "+args.dir+'/alignment.bed')
+	  os.system("rm "+args.dir+'/contig_length')
+	  os.system("rm "+args.dir+'/contig_links')
+	  os.system("rm "+args.dir+'/contig_coverage')
+	  os.system("rm "+args.dir+'/bundled_links')
+	  os.system("rm "+args.dir+'/bundled_links_filtered')
+	  os.system("rm "+args.dir+'/bundled_graph.gml')
+	  os.system("rm "+args.dir+'/invalidated_counts')
+	  os.system("rm "+args.dir+'/repeats')
+	  os.system("rm "+args.dir+'/oriented_links')
+	  os.system("rm "+args.dir+'/oriented.gml')
+	  os.system("rm "+args.dir+'/seppairs')
+	  os.system("rm "+args.dir+'/alignment.bed')
 if __name__ == '__main__':
     main()

@@ -7,7 +7,7 @@ import multiprocessing
 parser = argparse.ArgumentParser()
 parser.add_argument("-g", "--graph", help='bundled graph')
 parser.add_argument("-l","--length",help="contig length")
-#parser.add_argument("-o","--output",help="output file")
+parser.add_argument("-o","--output",help="output file")
 args = parser.parse_args()
 G = nx.Graph()
 cpus = multiprocessing.cpu_count()
@@ -33,32 +33,31 @@ def get_centrality(subg):
     mean = np.mean(centralities.values())
     stdev = np.std(centralities.values())
     for node in centralities:
-        if centralities[node] >= mean + 2*stdev:
-            repeat_nodes[node] = 1
+        if centralities[node] >= mean + 3*stdev:
+            repeat_nodes[node] = centralities[node]
 
 def centrality_wrapper(graph):
     pool =  ThreadPool(cpus)
     for subg in nx.connected_component_subgraphs(graph):
         #get_centrality(subg)
-        if len(subg.nodes()) >= 10:
+        if len(subg.nodes()) >= 50:
             result = pool.map(get_centrality,[subg])
     pool.close()
     pool.join()
 G_copy = G.copy()
 
-for i in xrange(4):
+ofile = open(args.output,'w')
+
+for i in xrange(3):
     centrality_wrapper(G_copy)
     for node in repeat_nodes:
         if G_copy.has_node(node):
             G_copy.remove_node(node)
+	    ofile.write(str(node)+'\t'+str(repeat_nodes[node])+'\n')
 
-for u,v,data in G_copy.edges(data=True):
-    #print u,v
-    if abs(data['mean']) > contig_length[u] or abs(data['mean']) > contig_length[v]:
-        G_copy.remove_edge(u,v)
 
-for u,v,data in G_copy.edges(data=True):
-    print u + '\t' + data['ori'][0] + '\t' + v + '\t'+data['ori'][1] + '\t' + str(data['mean']) + '\t' + str(data['stdev']) + '\t' + str(data['bsize'])
-
+ 
+#for u,v,data in G_copy.edges(data=True):
+#    print u +"\t"+data[u][v]['ori'][0]+v+"\t"+data[u][v]['ori'][1]+"\t"+str(data[u][v]["mean"])+"\t"+str(data[u][v]["stdev"])+"\t"+str(data[u][v]["bsize"])
 #nx.write_gml(G_copy,args.output)
 
