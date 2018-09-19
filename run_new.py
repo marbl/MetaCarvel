@@ -98,7 +98,7 @@ def main():
           print >> sys.stderr, time.strftime("%c")+': Failed to bundle links, terminating scaffolding....\n' + str(err.output)
           sys.exit(1)
 
-    if args.repeats:
+    if args.repeats == "true":
         print >> sys.stderr, time.strftime("%c")+':Started finding and removing repeats'
         try:
             p = subprocess.check_output(bin+'/orientcontigs -l '+args.dir+'/bundled_links -c '+ args.dir+'/contig_length --bsize -o ' +args.dir+'/oriented.gml -p ' + args.dir+'/oriented_links -i '+args.dir+'/invalidated_counts',shell=True)
