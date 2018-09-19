@@ -9,6 +9,12 @@ To install the software, please execute following commands:
 cd MetaCarvel
 make
 ```
+Before running `make` command, please make sure you have modified following in the `makefile` to suit your OGDF installation location:
+
+```
+OGDF_INCL = -I /cbcb/sw/RedHat-7-x86_64/users/jayg/local/OGDF/2015.05/include/
+OGDF_LINK = -L /cbcb/sw/RedHat-7-x86_64/users/jayg/local/OGDF/2015.05/_release/
+```
 
 To run MetaCarvel, run the following;
 
