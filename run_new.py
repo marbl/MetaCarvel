@@ -30,6 +30,12 @@ def main():
     except ImportError:
       raise ImportError('Looks like you do not have networkx. Please rerun with networkx module installed.')
       sys.exit(1)
+    version = networkx.__version__
+    version_id = int(version.split('.')[1])
+    first = int(version.split('.')[0])
+    if version_id >= 10 or first != 1:
+    	print >> sys.stderr, time.strftime("%c")+': Networkx should be 1.10 or earlier.. Terminating...\n'
+	sys.exit(1)
     if not cmd_exists('samtools'):
       print >> sys.stderr, time.strftime("%c")+': Samtools does not exist in PATH. Terminating....\n'
       sys.exit(1)
