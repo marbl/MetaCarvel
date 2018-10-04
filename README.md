@@ -9,25 +9,14 @@ pip install networkx==1.10
 ```
 If this doesn't work, you can download the source from [here](https://files.pythonhosted.org/packages/cb/fc/9b1c805b9abe249b9ce786d2ac9e6808d7776237d195365d50188a38dc30/networkx-1.10.tar.gz) and install from source.
 
-The detailed documentation and tutorial to install and run MetaCarvel can be found [here](http://bambus3.readthedocs.io/en/latest/).
+The detailed documentation and tutorial to install and run MetaCarvel can be found on [Wiki](https://github.com/marbl/MetaCarvel/wiki).
 
-To install the software, please execute following commands:
-```
-cd MetaCarvel
-make
-```
-Before running `make` command, please make sure you have modified following in the `makefile` to suit your OGDF installation location:
-
-```
-OGDF_INCL = -I /cbcb/sw/RedHat-7-x86_64/users/jayg/local/OGDF/2015.05/include/
-OGDF_LINK = -L /cbcb/sw/RedHat-7-x86_64/users/jayg/local/OGDF/2015.05/_release/
-```
 
 To run MetaCarvel, run the following;
 
 ```
-python run_new.py -h
-usage: run_new.py [-h] -a ASSEMBLY -m MAPPING -d DIR [-f FORCE] [-r REPEATS]
+python run.py -h
+usage: run.py [-h] -a ASSEMBLY -m MAPPING -d DIR [-f FORCE] [-r REPEATS]
               [-k KEEP] [-l LENGTH] [-b BSIZE]
 
 MetaCarvel: A scaffolding tool for metagenomic assemblies
