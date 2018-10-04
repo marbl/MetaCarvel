@@ -20,7 +20,7 @@ def main():
     parser.add_argument("-f",'--force',help="force re-run of pipeline, will remove any existing output",default=False)
     parser.add_argument("-r",'--repeats',help="To turn repeat detection on",default=False)
     parser.add_argument("-k","--keep", help="Set this to keep temporary files in output directory",default=False)
-    parser.add_argument("-l","--length",help="Minimum length of contigs to consider for scaffolding",default=500)
+    parser.add_argument("-l","--length",help="Minimum length of contigs to consider for scaffolding in base pairs (bp)",default=500)
     parser.add_argument("-b","--bsize",help="Minimum mate pair support between contigs to consider for scaffolding",default=3)
     parser.add_argument("-v",'--visualization',help="To generate .db file for AsmViz visualization program",default=False)
 
@@ -154,7 +154,7 @@ def main():
 	    except subprocess.CalledProcessError as err:
 		    print >> sys.stderr, time.strftime("%c")+': Failed to generate scaffold sequences , terminating scaffolding....\n' + str(err.output)
 
-    if args.visualization:
+    if args.visualization == "true":
     	#try:
       graphpath = os.path.abspath(args.dir+'/oriented.gml')
       bubblepath = os.path.abspath(args.dir+'/bubbles.txt')
@@ -166,18 +166,30 @@ def main():
     	#except subprocess.CalledProcessError as err:
     	    #print >> sys.stderr, time.strftime("%c")+": Failed to run MetaGenomeScope \n" + str(err.output)
 
-    if not args.keep:
-	  os.system("rm "+args.dir+'/contig_length')
-	  os.system("rm "+args.dir+'/contig_links')
-	  os.system("rm "+args.dir+'/contig_coverage')
-	  os.system("rm "+args.dir+'/bundled_links')
-	  os.system("rm "+args.dir+'/bundled_links_filtered')
-	  os.system("rm "+args.dir+'/bundled_graph.gml')
-	  os.system("rm "+args.dir+'/invalidated_counts')
-	  os.system("rm "+args.dir+'/repeats')
-	  os.system("rm "+args.dir+'/oriented_links')
-	  os.system("rm "+args.dir+'/oriented.gml')
-	  os.system("rm "+args.dir+'/seppairs')
-	  os.system("rm "+args.dir+'/alignment.bed')
+    if not args.keep == "true":
+      if os.path.exists(args.dir+'/contig_length'):
+  	   os.system("rm "+args.dir+'/contig_length')
+      if os.path.exists(args.dir+'/contig_links'):
+  	   os.system("rm "+args.dir+'/contig_links')
+      if os.path.exists(args.dir+'/contig_coverage'):
+  	    os.system("rm "+args.dir+'/contig_coverage')
+      if os.path.exists(args.dir+'/bundled_links'):
+        os.system("rm "+args.dir+'/bundled_links')
+      if os.path.exists(args.dir+'/bundled_links_filtered'):
+        os.system("rm "+args.dir+'/bundled_links_filtered')
+      if os.path.exists(args.dir+'/bundled_graph.gml'):
+        os.system("rm "+args.dir+'/bundled_graph.gml')
+      if os.path.exists(args.dir+'/invalidated_counts'):
+        os.system("rm "+args.dir+'/invalidated_counts')
+      if os.path.exists(args.dir+'/repeats'):
+        os.system("rm "+args.dir+'/repeats')
+      if os.path.exists(args.dir+'/oriented_links'):
+        os.system("rm "+args.dir+'/oriented_links')
+      if os.path.exists(args.dir+'/oriented.gml'):
+        os.system("rm "+args.dir+'/oriented.gml')
+      if os.path.exists(args.dir+'/seppairs'):
+        os.system("rm "+args.dir+'/seppairs')
+      if os.path.exists(args.dir+'/alignment.bed'):
+        os.system("rm "+args.dir+'/alignment.bed')
 if __name__ == '__main__':
     main()
