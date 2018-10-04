@@ -17,7 +17,6 @@ def main():
     parser.add_argument("-a","--assembly",help="assembled contigs",required=True)
     parser.add_argument("-m","--mapping", help="mapping of read to contigs in bam format",required=True)
     parser.add_argument("-d","--dir",help="output directory for results",default='out',required=True)
-    parser.add_argument("-f",'--force',help="force re-run of pipeline, will remove any existing output",default=False)
     parser.add_argument("-r",'--repeats',help="To turn repeat detection on",default="true")
     parser.add_argument("-k","--keep", help="Set this to keep temporary files in output directory",default=False)
     parser.add_argument("-l","--length",help="Minimum length of contigs to consider for scaffolding in base pairs (bp)",default=500)
@@ -49,14 +48,6 @@ def main():
         os.makedirs(args.dir)
     print >> sys.stderr, time.strftime("%c")+':Starting scaffolding..'
 
-    if args.force:
-       if os.path.exists(args.dir+'/alignment.bed'): os.unlink(args.dir+'/alignment.bed')
-       if os.path.exists(args.dir+'/contig_length'): os.unlink(args.dir+'/contig_length')
-       if os.path.exists(args.dir+'/contig_links'): os.unlink(args.dir+'/contig_links')
-       if os.path.exists(args.dir+"/bundled_links"): os.unlink(args.dir+"/bundled_links")
-       if os.path.exists(args.dir+'/oriented_links'): os.unlink(args.dir+'/oriented_links')
-       if os.path.exists(args.dir+'/seppairs'): os.unlink(args.dir+'/seppairs')
-       if os.path.exists(args.dir+'/scaffolds.fasta'): os.unlink(args.dir+'/scaffolds.fasta')
 
     if os.path.exists(args.dir+'/alignment.bed') == False:
         print >> sys.stderr, "converting bam file to bed file"
