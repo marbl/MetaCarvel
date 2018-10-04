@@ -33,9 +33,9 @@ def main():
     version = networkx.__version__
     version_id = int(version.split('.')[1])
     first = int(version.split('.')[0])
-    print >> sys.stderr, 'Networkx ' + version + ' found'	 
-    if version_id > 10 or first != 1:
-    	print >> sys.stderr, time.strftime("%c")+': Networkx should be 1.10 or earlier.. Terminating...\n'
+    print >> sys.stderr, 'Networkx ' + version + ' found'
+    if first != 1:
+    	print >> sys.stderr, time.strftime("%c")+': Networkx should be 1.11 or earlier.. Terminating...\n'
 	sys.exit(1)
     if not cmd_exists('samtools'):
       print >> sys.stderr, time.strftime("%c")+': Samtools does not exist in PATH. Terminating....\n'
@@ -118,7 +118,7 @@ def main():
    	except subprocess.CalledProcessError as err:
             	print >> sys.stderr, time.strftime("%c")+': Failed to find repeats, terminating scaffolding....\n' + str(err.output)
             	sys.exit(1)
-    
+
         try:
             	p = subprocess.check_output('python '+bin+'/repeat_filter.py  '+args.dir+'/contig_coverage ' + args.dir+ '/bundled_links ' + args.dir+'//invalidated_counts ' + args.dir+'/high_centrality.txt ' + args.dir+ '/contig_length '+ args.dir+'/repeats > ' + args.dir+'//bundled_links_filtered',shell=True)
 	except subprocess.CalledProcessError as err:
@@ -126,10 +126,10 @@ def main():
             sys.exit(1)
         print >> sys.stderr, time.strftime("%c")+':Finished repeat finding and removal'
     else:
-        os.system('mv '+args.dir+'/bundled_links ' + args.dir+'/bundled_links_filtered')                                                                                                                                                                                                          
+        os.system('mv '+args.dir+'/bundled_links ' + args.dir+'/bundled_links_filtered')
 	print >> sys.stderr, time.strftime("%c")+':Started orienting the contigs'
     # if os.path.exists(args.dir+'/oriented_links') == False:
-      #os.system('./orientcontigs -l '+args.dir+'/bundled_links_filtered -c '+ args.dir+'/contig_length --bsize -o ' +args.dir+'/oriented.gml -p ' + args.dir+'/oriented_links' )	
+      #os.system('./orientcontigs -l '+args.dir+'/bundled_links_filtered -c '+ args.dir+'/contig_length --bsize -o ' +args.dir+'/oriented.gml -p ' + args.dir+'/oriented_links' )
     try:
 	    p = subprocess.check_output(bin+'/orientcontigs -l '+args.dir+'/bundled_links_filtered -c '+ args.dir+'/contig_length --bsize -o ' +args.dir+'/oriented.gml -p ' + args.dir+'/oriented_links -i '+args.dir+'/invalidated_counts',shell=True)
 	    print >> sys.stderr, time.strftime("%c")+':Finished orienting the contigs'
@@ -153,13 +153,19 @@ def main():
 		    print >> sys.stderr, time.strftime("%c")+':Final scaffolds written, Done!'
 	    except subprocess.CalledProcessError as err:
 		    print >> sys.stderr, time.strftime("%c")+': Failed to generate scaffold sequences , terminating scaffolding....\n' + str(err.output)
-    
+
     if args.visualization:
-    	try:
-    	    p = subprocess.check_output('python '+bin+'/MetaGenomeScope/graph_collator/collate.py -i ' + args.dir+'/oriented.gml ' + ' -ub ' + args.dir+'/bubbles.txt -ubl -d ' + args.dir+'/mgsc -o mgsc')
-	except subprocess.CalledProcessError as err:
-	    print >> sys.stderr, time.strftime("%c")+": Failed to run MetaGenomeScope \n" + str(err.output)
-	    
+    	#try:
+      graphpath = os.path.abspath(args.dir+'/oriented.gml')
+      bubblepath = os.path.abspath(args.dir+'/bubbles.txt')
+      os.system('mkdir -p '+args.dir+'/mgsc')
+      opath = os.path.abspath(args.dir+'/mgsc')
+      os.system('python '+bin+'/MetaGenomeScope/graph_collator/collate.py -i ' + graphpath + ' -w -ub ' + bubblepath +' -ubl -d ' + opath+' -o mgsc -w')
+      os.system('cp '+opath+'/mgsc.db ' + args.dir+'/')    
+          #p = subprocess.check_output('python '+bin+'/MetaGenomeScope/graph_collator/collate.py -i ' + graphpath + ' -w -ub ' + bubblepath +' -ubl -d ' + opath+' -o mgsc -w')
+    	#except subprocess.CalledProcessError as err:
+    	    #print >> sys.stderr, time.strftime("%c")+": Failed to run MetaGenomeScope \n" + str(err.output)
+
     if not args.keep:
 	  os.system("rm "+args.dir+'/contig_length')
 	  os.system("rm "+args.dir+'/contig_links')
