@@ -16,8 +16,8 @@ To run MetaCarvel, run the following;
 
 ```
 python run.py -h
-usage: run.py [-h] -a ASSEMBLY -m MAPPING -d DIR [-f FORCE] [-r REPEATS]
-              [-k KEEP] [-l LENGTH] [-b BSIZE]
+usage: run.py [-h] -a ASSEMBLY -m MAPPING -d DIR [-r REPEATS] [-k KEEP]
+              [-l LENGTH] [-b BSIZE] [-v VISUALIZATION]
 
 MetaCarvel: A scaffolding tool for metagenomic assemblies
 
@@ -28,17 +28,17 @@ optional arguments:
   -m MAPPING, --mapping MAPPING
                         mapping of read to contigs in bam format
   -d DIR, --dir DIR     output directory for results
-  -f FORCE, --force FORCE
-                        force re-run of pipeline, will remove any existing
-                        output
   -r REPEATS, --repeats REPEATS
                         To turn repeat detection on
-  -k KEEP, --keep KEEP  Set this to kepp temporary files in output directory
+  -k KEEP, --keep KEEP  Set this to keep temporary files in output directory
   -l LENGTH, --length LENGTH
                         Minimum length of contigs to consider for scaffolding
+                        in base pairs (bp)
   -b BSIZE, --bsize BSIZE
-                        Minium mate pair support between contigs to consider
+                        Minimum mate pair support between contigs to consider
                         for scaffolding
+  -v VISUALIZATION, --visualization VISUALIZATION
+                        To generate .db file for AsmViz visualization program
 ```
 
 This will generate a bunch of files in the output directory. If you are interested in output of each step of the scaffolding process, these files can 
