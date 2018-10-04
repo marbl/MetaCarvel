@@ -153,7 +153,13 @@ def main():
 		    print >> sys.stderr, time.strftime("%c")+':Final scaffolds written, Done!'
 	    except subprocess.CalledProcessError as err:
 		    print >> sys.stderr, time.strftime("%c")+': Failed to generate scaffold sequences , terminating scaffolding....\n' + str(err.output)
-
+    
+    if args.visualization:
+    	try:
+    	    p = subprocess.check_output('python '+bin+'/MetaGenomeScope/graph_collator/collate.py -i ' + args.dir+'/oriented.gml ' + ' -ub ' + args.dir+'/bubbles.txt -ubl -d ' + args.dir+'/mgsc -o mgsc')
+	except subprocess.CalledProcessError as err:
+	    print >> sys.stderr, time.strftime("%c")+": Failed to run MetaGenomeScope \n" + str(err.output)
+	    
     if not args.keep:
 	  os.system("rm "+args.dir+'/contig_length')
 	  os.system("rm "+args.dir+'/contig_links')
