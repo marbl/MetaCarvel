@@ -1,0 +1,4 @@
+[submodule "MetagenomeScope"]
+	path = MetagenomeScope
+	url = https://github.com/marbl/MetagenomeScope
+	branch = master
