@@ -18,7 +18,7 @@ def main():
     parser.add_argument("-m","--mapping", help="mapping of read to contigs in bam format",required=True)
     parser.add_argument("-d","--dir",help="output directory for results",default='out',required=True)
     parser.add_argument("-f",'--force',help="force re-run of pipeline, will remove any existing output",default=False)
-    parser.add_argument("-r",'--repeats',help="To turn repeat detection on",default=False)
+    parser.add_argument("-r",'--repeats',help="To turn repeat detection on",default="true")
     parser.add_argument("-k","--keep", help="Set this to keep temporary files in output directory",default=False)
     parser.add_argument("-l","--length",help="Minimum length of contigs to consider for scaffolding in base pairs (bp)",default=500)
     parser.add_argument("-b","--bsize",help="Minimum mate pair support between contigs to consider for scaffolding",default=3)
