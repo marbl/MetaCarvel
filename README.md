@@ -9,7 +9,7 @@ pip install networkx==1.10
 ```
 If this doesn't work, you can download the source from [here](https://files.pythonhosted.org/packages/cb/fc/9b1c805b9abe249b9ce786d2ac9e6808d7776237d195365d50188a38dc30/networkx-1.10.tar.gz) and install from source.
 
-The detailed documentation and tutorial to install and run MetaCarvel can be found on [Wiki](https://github.com/marbl/MetaCarvel/wiki).
+## The detailed documentation and tutorial to install and run MetaCarvel can be found on [Wiki](https://github.com/marbl/MetaCarvel/wiki).
 
 
 To run MetaCarvel, run the following;
