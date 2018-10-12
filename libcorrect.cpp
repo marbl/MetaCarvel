@@ -7,6 +7,7 @@
 #include <cmath>
 #include <queue>
 #include <numeric>
+#include <unordered_map>
 
 #include "cmdline/cmdline.h"
 
@@ -48,6 +49,7 @@ void parse_bed(string path)
 {
 	ifstream bedfile(getCharExpr(path));
 	string line;
+	unordered_map<string,int> seen;
 	while(getline(bedfile,line))
 	{	
 		string contig, read;
@@ -56,13 +58,29 @@ void parse_bed(string path)
 		istringstream iss(line);
 		iss >> contig >> start >> end >> read >> flag >> strand;
 		BedRecord rec(contig,start,end,strand);
-		if(read[read.length() -1 ] == '1')
+		if(read[read.length()-2] == '/')
 		{
-			first_in_pair[read.substr(0,read.length()-2)] = rec;
+			if(read[read.length() -1 ] == '1')
+			{
+				first_in_pair[read.substr(0,read.length()-2)] = rec;
+			}	
+			else
+			{	
+				second_in_pair[read.substr(0,read.length()-2)] = rec;
+			}
 		}
 		else
 		{
-			second_in_pair[read.substr(0,read.length()-2)] = rec;
+		    if(seen.find(read) == seen.end())
+		    {
+		    	first_in_pair[read] = rec;
+			seen[read] = true;
+		    }
+		    else
+		    {
+			second_in_pair[read] = rec;
+		    }
+
 		}
 
 	}
