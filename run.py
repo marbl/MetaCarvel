@@ -154,7 +154,7 @@ def main():
       os.system('python '+cwd+'/MetagenomeScope/graph_collator/collate.py -i '
               + graphpath + ' -w -ub ' + bubblepath + ' -ubl -d ' + args.dir
               + ' -o mgsc')
-          #p = subprocess.check_output('python '+cwd+'/MetagenomeScope/graph_collator/collate.py -i ' + graphpath + ' -w -ub ' + bubblepath +' -ubl -d ' + opath+' -o mgsc -w')
+          #p = subprocess.check_output('python '+cwd+'/MetagenomeScope/graph_collator/collate.py -i ' + graphpath + ' -w -ub ' + bubblepath + ' -ubl -d ' + args.dir + ' -o mgsc')
     	#except subprocess.CalledProcessError as err:
     	    #print >> sys.stderr, time.strftime("%c")+": Failed to run MetagenomeScope \n" + str(err.output)
 
