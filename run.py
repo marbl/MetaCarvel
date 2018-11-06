@@ -21,7 +21,7 @@ def main():
     parser.add_argument("-k","--keep", help="Set this to keep temporary files in output directory",default=False)
     parser.add_argument("-l","--length",help="Minimum length of contigs to consider for scaffolding in base pairs (bp)",default=500)
     parser.add_argument("-b","--bsize",help="Minimum mate pair support between contigs to consider for scaffolding",default=3)
-    parser.add_argument("-v",'--visualization',help="To generate .db file for AsmViz visualization program",default=False)
+    parser.add_argument("-v",'--visualization',help="Generate a .db file for the MetagenomeScope visualization tool",default=False)
 
     args = parser.parse_args()
     try:
@@ -143,7 +143,7 @@ def main():
 		    p = subprocess.check_output('python '+cwd+'/layout.py -a '+ args.assembly +' -b '+args.dir+'/bubbles.txt' +' -g ' + args.dir+'/oriented.gml -s '+args.dir+'/seppairs -o '+args.dir+'/scaffolds.fa -f '+args.dir+'/scaffolds.agp -e '+args.dir+'/scaffold_graph.gfa',shell=True)
 		    print >> sys.stderr, time.strftime("%c")+':Final scaffolds written, Done!'
 	    except subprocess.CalledProcessError as err:
-		    print >> sys.stderr, time.strftime("%c")+': Failed to generate scaffold sequences , terminating scaffolding....\n' + str(err.output)
+		    print >> sys.stderr, time.strftime("%c")+': Failed to generate scaffold sequences, terminating scaffolding....\n' + str(err.output)
 
     if args.visualization == "true":
     	#try:
