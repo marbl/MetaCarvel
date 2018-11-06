@@ -149,10 +149,11 @@ def main():
     	#try:
       graphpath = os.path.abspath(args.dir+'/oriented.gml')
       bubblepath = os.path.abspath(args.dir+'/bubbles.txt')
-      os.system('mkdir -p '+args.dir+'/mgsc')
-      opath = os.path.abspath(args.dir+'/mgsc')
-      os.system('python '+bin+'/MetagenomeScope/graph_collator/collate.py -i ' + graphpath + ' -w -ub ' + bubblepath +' -ubl -d ' + opath+' -o mgsc -w')
-      os.system('cp '+opath+'/mgsc.db ' + args.dir+'/')    
+      # Output the MetagenomeScope .db file directly to args.dir. The only file
+      # created by collate.py here is the mgsc.db file.
+      os.system('python '+bin+'/MetagenomeScope/graph_collator/collate.py -i '
+              + graphpath + ' -w -ub ' + bubblepath + ' -ubl -d ' + args.dir
+              + ' -o mgsc -w')
           #p = subprocess.check_output('python '+bin+'/MetagenomeScope/graph_collator/collate.py -i ' + graphpath + ' -w -ub ' + bubblepath +' -ubl -d ' + opath+' -o mgsc -w')
     	#except subprocess.CalledProcessError as err:
     	    #print >> sys.stderr, time.strftime("%c")+": Failed to run MetagenomeScope \n" + str(err.output)
