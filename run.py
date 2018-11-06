@@ -11,7 +11,7 @@ def cmd_exists(cmd):
         stdout=subprocess.PIPE, stderr=subprocess.PIPE) == 0
 
 def main():
-    bin=os.path.dirname(os.path.abspath(__file__))
+    cwd=os.path.dirname(os.path.abspath(__file__))
 
     parser = argparse.ArgumentParser(description="MetaCarvel: A scaffolding tool for metagenomic assemblies")
     parser.add_argument("-a","--assembly",help="assembled contigs",required=True)
@@ -77,7 +77,7 @@ def main():
         #print './libcorrect -l' + args.lib + ' -a' + args.dir+'/alignment.bed -d ' +args.dir+'/contig_length -o '+ args.dir+'/contig_links'
         try:
           #os.system('./libcorrect -l ' + args.lib + ' -a ' + args.dir+'/alignment.bed -d ' +args.dir+'/contig_length -o '+ args.dir+'/contig_links -x '+args.dir+'/contig_coverage')
-           p = subprocess.check_output(bin+'/libcorrect -a ' + args.dir+'/alignment.bed -d ' +args.dir+'/contig_length -o '+ args.dir+'/contig_links -x '+args.dir+'/contig_coverage -c '+str(args.length),shell=True)
+           p = subprocess.check_output(cwd+'/libcorrect -a ' + args.dir+'/alignment.bed -d ' +args.dir+'/contig_length -o '+ args.dir+'/contig_links -x '+args.dir+'/contig_coverage -c '+str(args.length),shell=True)
            print >> sys.stderr, time.strftime("%c") +':Finished generating links between contigs'
         except subprocess.CalledProcessError as err:
             os.system('rm '+args.dir+'/contig_links')
@@ -88,7 +88,7 @@ def main():
     if os.path.exists(args.dir+'/bundled_links') == False:
         try:
           #os.system('./bundler -l '+ args.dir+'/contig_links -o ' + args.dir+'/bundled_links + -b '+args.dir+'/bundled_graph.gml')
-          p = subprocess.check_output(bin+'/bundler -l '+ args.dir+'/contig_links -o ' + args.dir+'/bundled_links + -b '+args.dir+'/bundled_graph.gml -c '+str(args.bsize), shell=True)
+          p = subprocess.check_output(cwd+'/bundler -l '+ args.dir+'/contig_links -o ' + args.dir+'/bundled_links + -b '+args.dir+'/bundled_graph.gml -c '+str(args.bsize), shell=True)
           print >> sys.stderr, time.strftime("%c")+':Finished bundling of links between contigs'
         except subprocess.CalledProcessError as err:
           os.system('rm '+args.dir+'/bundled_links')
@@ -99,19 +99,19 @@ def main():
     if args.repeats == "true":
         print >> sys.stderr, time.strftime("%c")+':Started finding and removing repeats'
         try:
-            p = subprocess.check_output(bin+'/orientcontigs -l '+args.dir+'/bundled_links -c '+ args.dir+'/contig_length --bsize -o ' +args.dir+'/oriented.gml -p ' + args.dir+'/oriented_links -i '+args.dir+'/invalidated_counts',shell=True)
+            p = subprocess.check_output(cwd+'/orientcontigs -l '+args.dir+'/bundled_links -c '+ args.dir+'/contig_length --bsize -o ' +args.dir+'/oriented.gml -p ' + args.dir+'/oriented_links -i '+args.dir+'/invalidated_counts',shell=True)
 
         except subprocess.CalledProcessError as err:
             print >> sys.stderr, time.strftime("%c") + ': Failed to find repeats, terminating scaffolding...\n' + str(err.output)
 
     	try:
-		p = subprocess.check_output('python '+bin+'/centrality.py  -g '+args.dir+'/bundled_links -l ' + args.dir+ '/contig_length -o  '+args.dir+'/high_centrality.txt' ,shell=True)
+		p = subprocess.check_output('python '+cwd+'/centrality.py  -g '+args.dir+'/bundled_links -l ' + args.dir+ '/contig_length -o  '+args.dir+'/high_centrality.txt' ,shell=True)
    	except subprocess.CalledProcessError as err:
             	print >> sys.stderr, time.strftime("%c")+': Failed to find repeats, terminating scaffolding....\n' + str(err.output)
             	sys.exit(1)
 
         try:
-            	p = subprocess.check_output('python '+bin+'/repeat_filter.py  '+args.dir+'/contig_coverage ' + args.dir+ '/bundled_links ' + args.dir+'//invalidated_counts ' + args.dir+'/high_centrality.txt ' + args.dir+ '/contig_length '+ args.dir+'/repeats > ' + args.dir+'//bundled_links_filtered',shell=True)
+            	p = subprocess.check_output('python '+cwd+'/repeat_filter.py  '+args.dir+'/contig_coverage ' + args.dir+ '/bundled_links ' + args.dir+'//invalidated_counts ' + args.dir+'/high_centrality.txt ' + args.dir+ '/contig_length '+ args.dir+'/repeats > ' + args.dir+'//bundled_links_filtered',shell=True)
 	except subprocess.CalledProcessError as err:
             print >> sys.stderr, time.strftime("%c")+': Failed to find repeats, terminating scaffolding....\n' + str(err.output)
             sys.exit(1)
@@ -122,7 +122,7 @@ def main():
     # if os.path.exists(args.dir+'/oriented_links') == False:
       #os.system('./orientcontigs -l '+args.dir+'/bundled_links_filtered -c '+ args.dir+'/contig_length --bsize -o ' +args.dir+'/oriented.gml -p ' + args.dir+'/oriented_links' )
     try:
-	    p = subprocess.check_output(bin+'/orientcontigs -l '+args.dir+'/bundled_links_filtered -c '+ args.dir+'/contig_length --bsize -o ' +args.dir+'/oriented.gml -p ' + args.dir+'/oriented_links -i '+args.dir+'/invalidated_counts',shell=True)
+	    p = subprocess.check_output(cwd+'/orientcontigs -l '+args.dir+'/bundled_links_filtered -c '+ args.dir+'/contig_length --bsize -o ' +args.dir+'/oriented.gml -p ' + args.dir+'/oriented_links -i '+args.dir+'/invalidated_counts',shell=True)
 	    print >> sys.stderr, time.strftime("%c")+':Finished orienting the contigs'
     except subprocess.CalledProcessError:
 	    print >> sys.stderr, time.strftime("%c")+': Failed to Orient contigs, terminating scaffolding....'
@@ -131,7 +131,7 @@ def main():
 	#if os.path.exists(args.dir+'/seppairs') == False:
 	#os.system('./spqr -l ' + args.dir+'/oriented_links -o ' + args.dir+'/seppairs')
     try:
-	    p = subprocess.check_output(bin+'/spqr -l ' + args.dir+'/oriented_links -o ' + args.dir+'/seppairs',shell=True)
+	    p = subprocess.check_output(cwd+'/spqr -l ' + args.dir+'/oriented_links -o ' + args.dir+'/seppairs',shell=True)
 	    print >> sys.stderr, time.strftime("%c")+':Finished finding spearation pairs'
     except subprocess.CalledProcessError as err:
 	    print >> sys.stderr, time.strftime("%c")+': Failed to decompose graph, terminating scaffolding....\n' + str(err.output)
@@ -140,7 +140,7 @@ def main():
     print >> sys.stderr, time.strftime("%c")+':Finding the layout of contigs'
     if os.path.exists(args.dir+'/scaffolds.fasta') == False:
 	    try:
-		    p = subprocess.check_output('python '+bin+'/layout.py -a '+ args.assembly +' -b '+args.dir+'/bubbles.txt' +' -g ' + args.dir+'/oriented.gml -s '+args.dir+'/seppairs -o '+args.dir+'/scaffolds.fa -f '+args.dir+'/scaffolds.agp -e '+args.dir+'/scaffold_graph.gfa',shell=True)
+		    p = subprocess.check_output('python '+cwd+'/layout.py -a '+ args.assembly +' -b '+args.dir+'/bubbles.txt' +' -g ' + args.dir+'/oriented.gml -s '+args.dir+'/seppairs -o '+args.dir+'/scaffolds.fa -f '+args.dir+'/scaffolds.agp -e '+args.dir+'/scaffold_graph.gfa',shell=True)
 		    print >> sys.stderr, time.strftime("%c")+':Final scaffolds written, Done!'
 	    except subprocess.CalledProcessError as err:
 		    print >> sys.stderr, time.strftime("%c")+': Failed to generate scaffold sequences , terminating scaffolding....\n' + str(err.output)
@@ -151,10 +151,10 @@ def main():
       bubblepath = os.path.abspath(args.dir+'/bubbles.txt')
       # Output the MetagenomeScope .db file directly to args.dir. The only file
       # created by collate.py here is the mgsc.db file.
-      os.system('python '+bin+'/MetagenomeScope/graph_collator/collate.py -i '
+      os.system('python '+cwd+'/MetagenomeScope/graph_collator/collate.py -i '
               + graphpath + ' -w -ub ' + bubblepath + ' -ubl -d ' + args.dir
               + ' -o mgsc')
-          #p = subprocess.check_output('python '+bin+'/MetagenomeScope/graph_collator/collate.py -i ' + graphpath + ' -w -ub ' + bubblepath +' -ubl -d ' + opath+' -o mgsc -w')
+          #p = subprocess.check_output('python '+cwd+'/MetagenomeScope/graph_collator/collate.py -i ' + graphpath + ' -w -ub ' + bubblepath +' -ubl -d ' + opath+' -o mgsc -w')
     	#except subprocess.CalledProcessError as err:
     	    #print >> sys.stderr, time.strftime("%c")+": Failed to run MetagenomeScope \n" + str(err.output)
 
