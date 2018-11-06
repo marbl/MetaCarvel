@@ -151,11 +151,11 @@ def main():
       bubblepath = os.path.abspath(args.dir+'/bubbles.txt')
       os.system('mkdir -p '+args.dir+'/mgsc')
       opath = os.path.abspath(args.dir+'/mgsc')
-      os.system('python '+bin+'/MetaGenomeScope/graph_collator/collate.py -i ' + graphpath + ' -w -ub ' + bubblepath +' -ubl -d ' + opath+' -o mgsc -w')
+      os.system('python '+bin+'/MetagenomeScope/graph_collator/collate.py -i ' + graphpath + ' -w -ub ' + bubblepath +' -ubl -d ' + opath+' -o mgsc -w')
       os.system('cp '+opath+'/mgsc.db ' + args.dir+'/')    
-          #p = subprocess.check_output('python '+bin+'/MetaGenomeScope/graph_collator/collate.py -i ' + graphpath + ' -w -ub ' + bubblepath +' -ubl -d ' + opath+' -o mgsc -w')
+          #p = subprocess.check_output('python '+bin+'/MetagenomeScope/graph_collator/collate.py -i ' + graphpath + ' -w -ub ' + bubblepath +' -ubl -d ' + opath+' -o mgsc -w')
     	#except subprocess.CalledProcessError as err:
-    	    #print >> sys.stderr, time.strftime("%c")+": Failed to run MetaGenomeScope \n" + str(err.output)
+    	    #print >> sys.stderr, time.strftime("%c")+": Failed to run MetagenomeScope \n" + str(err.output)
 
     if not args.keep == "true":
       if os.path.exists(args.dir+'/contig_length'):
