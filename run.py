@@ -153,7 +153,7 @@ def main():
       # created by collate.py here is the mgsc.db file.
       os.system('python '+bin+'/MetagenomeScope/graph_collator/collate.py -i '
               + graphpath + ' -w -ub ' + bubblepath + ' -ubl -d ' + args.dir
-              + ' -o mgsc -w')
+              + ' -o mgsc')
           #p = subprocess.check_output('python '+bin+'/MetagenomeScope/graph_collator/collate.py -i ' + graphpath + ' -w -ub ' + bubblepath +' -ubl -d ' + opath+' -o mgsc -w')
     	#except subprocess.CalledProcessError as err:
     	    #print >> sys.stderr, time.strftime("%c")+": Failed to run MetagenomeScope \n" + str(err.output)
