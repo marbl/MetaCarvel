@@ -71,19 +71,7 @@ def find_three_bubbles(G,to_write,seppairs):
         for line in f:
             attrs = line.split()
             if len(attrs) == 5:
-                found = False
-                for each in attrs:
-                    if each in explored:
-                        found = True
-                        break
-                if found:
-                    continue
-
-                if G.has_edge(attrs[2],attrs[3]) and G.has_edge(attrs[3],attrs[4]) and G.has_edge(attrs[2],attrs[4]):
-                    for each in attrs:
-                        explored[each] = True
-                    ofile.write(attrs[2]+'\t'+attrs[3]+'\t'+attrs[4]+'\n')
-
+		ofile.write(line)
 
 def find_four_bubbles(G,to_write,seppairs):
     explored = {}
@@ -92,18 +80,15 @@ def find_four_bubbles(G,to_write,seppairs):
         for line in f:
             attrs = line.split()
             if len(attrs) == 6:
-                found = False
-                for each in attrs:
-                    if each in explored:
-                        found = True
-                        break
-                if found:
-                    continue
+		ofile.write(line)
 
-                if G.has_edge(attrs[2],attrs[3]) and G.has_edge(attrs[3],attrs[5]) and G.has_edge(attrs[2],attrs[4]) and G.has_edge(attrs[4],attrs[5]):
-                    for each in attrs:
-                        explored[each] = True
-                    ofile.write(attrs[2]+'\t'+attrs[3]+'\t'+attrs[4]+'\t'+attrs[5]+'\n')
+def find_complex_bubbles(G,to_write,seppairs):
+    ofile = open(to_write,'w')
+    with open(seppairs,'r') as f:
+	for line in f:
+		attrs = line.split()
+		if len(attrs) > 6:
+			ofile.write(line)
 
 
 def find_cycles(G,to_write):
@@ -129,8 +114,9 @@ def main():
     find_plasmids(G,args.working_dir+'/plasmids')
     find_tandem_repeats(G,args.working_dir+'/tandem_repeats')
     #find_interspersed_repeats(G,args.working_dir+'/interspersed_repeats')
-    find_three_bubbles(G,args.working_dir+'/three_bubbles',args.working_dir+'/seppairs')
-    find_four_bubbles(G,args.working_dir+'/four_bubbles',args.working_dir+'/seppairs')
+    find_three_bubbles(G,args.working_dir+'/three_bubbles',args.working_dir+'/bubbles.txt')
+    find_four_bubbles(G,args.working_dir+'/four_bubbles',args.working_dir+'/bubbles.txt')
+    find_complex_bubbles(G,args.working_dir+'/complex_bubbles',args.working_dir+'/bubbles.txt')
     find_cycles(G,args.working_dir+'/cycles')
 
 
