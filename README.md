@@ -44,5 +44,6 @@ optional arguments:
 This will generate a bunch of files in the output directory. If you are interested in output of each step of the scaffolding process, these files can 
 be useful. The final output files are scaffolds.fasta - which contains sequences of scaffolds  and scaffolds.agp is an agp style information for assignment of contigs to scaffolds. 
 
+Please cite MetaCarvel as follows: Ghurye, J., Treangen, T., Fedarko, M., Hervey, W. J., & Pop, M. (2019). MetaCarvel: linking assembly graph motifs to biological variants. Genome biology, 20(1), 1-14.
 
 NOTE: This tool is still under active development and may produce errors while running. Please report these as github issues so that we can fix them as we develop the software. For any questions, please email jayg@cs.umd.edu. 
