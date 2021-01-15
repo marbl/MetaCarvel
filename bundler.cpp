@@ -239,17 +239,6 @@ int main(int argc, char* argv[])
                 //sort begins and ends in increasing order
                 sort(begins.begin(),begins.end(),pairCompare);
                 sort(ends.begin(),ends.end(),pairCompare);
-                
-                /*
-                cout<<"begins"<<endl;
-                for(int i = 0; i < begins.size();i++)
-                    cout<<begins[i].first<<"\t"<<begins[i].second<<endl;
-                cout<<"ends"<<endl;
-                for(int i = 0; i < ends.size();i++)
-                    cout<<ends[i].first<<"\t"<<ends[i].second<<endl;
-                */
-                //start applying clique finding to these Links
-
                 int start_index = 0;
                 int end_index = 0;
                 int curr_clique = 0, best_clique = 0;
@@ -297,7 +286,7 @@ int main(int argc, char* argv[])
 
                     }
                 }
-               // cerr<<"Clique Done"<<endl;
+                //cerr<<"Clique Done"<<endl;
                 //cerr<<best_clique<<endl;
                 if(clique_links.size() != 0)
                 {
