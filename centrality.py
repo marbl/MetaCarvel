@@ -30,8 +30,8 @@ repeat_nodes = {}
 
 def get_centrality(subg):
     centralities = nx.betweenness_centrality(subg)
-    mean = np.mean(centralities.values())
-    stdev = np.std(centralities.values())
+    mean = np.mean(list(centralities.values()))
+    stdev = np.std(list(centralities.values()))
     for node in centralities:
         if centralities[node] >= mean + 3*stdev:
             repeat_nodes[node] = centralities[node]
@@ -48,12 +48,12 @@ G_copy = G.copy()
 
 ofile = open(args.output,'w')
 
-for i in xrange(3):
+for i in range(3):
     centrality_wrapper(G_copy)
     for node in repeat_nodes:
         if G_copy.has_node(node):
             G_copy.remove_node(node)
-	    ofile.write(str(node)+'\t'+str(repeat_nodes[node])+'\n')
+        ofile.write(str(node)+'\t'+str(repeat_nodes[node])+'\n')
 
 
  
