@@ -3,7 +3,7 @@
 
 #install OGDF
 cd OGDF
-bash makeMakefile.sh
+./makeMakefile.py
 make -j 16
 cd ..
 
