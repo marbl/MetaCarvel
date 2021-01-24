@@ -24,7 +24,7 @@ with open(args.length,'r') as f:
         if attrs[0] in G.nodes():
             contig_length[attrs[0]] = int(attrs[1])
 
-nx.set_node_attributes(G,'length',contig_length)
+nx.set_node_attributes(G, contig_length, 'length')
 #print contig_length
 repeat_nodes = {}
 
@@ -38,8 +38,9 @@ def get_centrality(subg):
 
 def centrality_wrapper(graph):
     pool =  ThreadPool(cpus)
-    for subg in nx.connected_component_subgraphs(graph):
+    for subg in nx.connected_components(graph):
         #get_centrality(subg)
+        subg = graph.subgraph(subg) 
         if len(subg.nodes()) >= 50:
             result = pool.map(get_centrality,[subg])
     pool.close()

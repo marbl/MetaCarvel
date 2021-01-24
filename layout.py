@@ -28,11 +28,6 @@ def parse_fasta(fh):
     return fa
 
 def test_pair(subg,source,sink,members):
-
-    # if G.has_edge(source,sink) or G.has_edge(sink,source):
-    #     return []
-    # print source
-    # print sink
    
     for u,v in subg.out_edges(sink):
         if v in members:
@@ -160,60 +155,60 @@ def get_variants(subg,source,sink):
 This method takes a graph and makes it acyclic by removing lowest cost edge in a cycle
 '''
 
-def make_acyclic(G):
-    G_copy = G.copy()
-    F = []
-    original_G = G.copy()
-    while not nx.is_directed_acyclic_graph(G_copy):
-        #iterate through cycles in G
+# def make_acyclic(G):
+#     G_copy = G.copy()
+#     F = []
+#     original_G = G.copy()
+#     while not nx.is_directed_acyclic_graph(G_copy):
+#         #iterate through cycles in G
         
-        for cycle in nx.simple_cycles(G_copy):
-            min_weight = 100000
-            min_u = 0
-            min_v = 0
-            #Find minimum weight edge in the cycle, weight
-            #here is bundle size
-            #TODO: start with smallest cycle by sorting
-            #print G.edges(data=True)
-            for i in range(0,len(cycle)-1):
-                u = cycle[i]
-                v = cycle[i+1]
-                if G[u][v]['bsize'] < min_weight:   
-                    min_weight = G[u][v]['bsize']
-                    min_u = u
-                    min_v = v
-            if G[cycle[- 1]][cycle[0]]['bsize'] < min_weight:
-                min_weight = G[cycle[-1]][cycle[0]]['bsize']
-                min_u = cycle[-1]
-                min_v = cycle[0]
+#         for cycle in nx.simple_cycles(G_copy):
+#             min_weight = 100000
+#             min_u = 0
+#             min_v = 0
+#             #Find minimum weight edge in the cycle, weight
+#             #here is bundle size
+#             #TODO: start with smallest cycle by sorting
+#             #print G.edges(data=True)
+#             for i in range(0,len(cycle)-1):
+#                 u = cycle[i]
+#                 v = cycle[i+1]
+#                 if G[u][v]['bsize'] < min_weight:   
+#                     min_weight = G[u][v]['bsize']
+#                     min_u = u
+#                     min_v = v
+#             if G[cycle[- 1]][cycle[0]]['bsize'] < min_weight:
+#                 min_weight = G[cycle[-1]][cycle[0]]['bsize']
+#                 min_u = cycle[-1]
+#                 min_v = cycle[0]
 
-            #reduce the edge weights by min_weight and remove the edge if its weight is 0
-            if min_weight != 100000:
-                for i in range(0,len(cycle)-1):
-                    u = cycle[i]
-                    v = cycle[i+1]
-                    G[u][v]['bsize'] -= min_weight
+#             #reduce the edge weights by min_weight and remove the edge if its weight is 0
+#             if min_weight != 100000:
+#                 for i in range(0,len(cycle)-1):
+#                     u = cycle[i]
+#                     v = cycle[i+1]
+#                     G[u][v]['bsize'] -= min_weight
                 
-                G[cycle[-1]][cycle[0]]['bsize'] -= min_weight
-                G.remove_edge(min_u,min_v)
-                F.append((min_u,min_v,original_G.get_edge_data(min_u,min_v)))
-                G_copy = G.copy()
-                break
+#                 G[cycle[-1]][cycle[0]]['bsize'] -= min_weight
+#                 G.remove_edge(min_u,min_v)
+#                 F.append((min_u,min_v,original_G.get_edge_data(min_u,min_v)))
+#                 G_copy = G.copy()
+#                 break
 
-    #Now try adding edges from F to G, TODO do in non-increasing order
+#     #Now try adding edges from F to G, TODO do in non-increasing order
 
-        if len(G.edges()) == 0:
-            continue
-        # if len(G.nodes()) == 0:
-        #   continue
-        for edge in F:
-            u = edge[0]
-            v = edge[1]
-            G.add_edge(u,v,edge[2])
-            if not nx.is_directed_acyclic_graph(G):
-                G.remove_edge(u,v)
+#         if len(G.edges()) == 0:
+#             continue
+#         # if len(G.nodes()) == 0:
+#         #   continue
+#         for edge in F:
+#             u = edge[0]
+#             v = edge[1]
+#             G.add_edge(u,v,edge[2])
+#             if not nx.is_directed_acyclic_graph(G):
+#                 G.remove_edge(u,v)
 
-    return G
+#     return G
 
 
 '''
@@ -257,7 +252,8 @@ def get_alternative_paths(subg,path):
     for node in path:
         subg1.remove_node(node)
 
-    for comp in nx.weakly_connected_component_subgraphs(subg1):
+    for comp in nx.weakly_connected_components(subg1):
+        comp = subg1.subgraph(comp)
         if len(comp.nodes()) == 1:
             paths.append(comp.nodes())
         else:
@@ -436,13 +432,13 @@ def main():
 
     for u,v,data in G.edges(data=True):
         if u not in members and v not in members:
-            G_new.add_edge(u,v,data)
+            G_new.add_edge(u,v,data=data)
 
         if u not in members and v in members:
-            G_new.add_edge(u,member_to_bubble[v],data)
+            G_new.add_edge(u,member_to_bubble[v],data=data)
 
         if v not in members and u in members:
-            G_new.add_edge(member_to_bubble[u],v,data)
+            G_new.add_edge(member_to_bubble[u],v,data=data)
 
 
 
@@ -453,22 +449,19 @@ def main():
         if node not in valid_sources and node not in valid_sink:
             for source in valid_sources:
                 if G.has_edge(node,source):
-                    data = G.get_edge_data(node,source)
+                    data = G.get_edge_data(node,source)["data"]
                     data['orientation'] = data['orientation'][0] + 'B'
-                    G_new.add_edge(node,source_to_bubble[source],data)
-
-                # if G.has_edge(source,node):
-                #   data = G.get_edge_data(source,node)
-                #   G_new.add_edge(source_to_bubble[source],node,data)
+                    G_new.add_edge(node,source_to_bubble[source],data=data)
 
             for sink in valid_sink:
                 if G.has_edge(sink,node):
-                    data = G.get_edge_data(sink,node)
+                    data = G.get_edge_data(sink,node)["data"]
                     data['orientation'] = 'E' + data['orientation'][1]
-                    G_new.add_edge(sink_to_bubble[sink],node,data)
+
+                    G_new.add_edge(sink_to_bubble[sink],node, data=data)
                 # if G.has_edge(node,sink):
-                #   data = G.get_edge_data(node,sink)
-                #   G_new.add_edge(node,sink_to_bubble[sink],data)
+                #   data = G.get_edge_data(node,sink)["data"]
+                #   G_new.add_edge(node,sink_to_bubble[sink],data=data)
 
     '''
     Now finally add edges between sources and sinks if they are in original graphs
@@ -478,14 +471,14 @@ def main():
         for sink in sink_to_bubble:
             if source_to_bubble[source] != sink_to_bubble[sink]:
                 if G.has_edge(source,sink):
-                    data= G.get_edge_data(source,sink)
+                    data= G.get_edge_data(source,sink)["data"]
                     data['orientation'] = 'BE'
-                    G_new.add_edge(source_to_bubble[source],sink_to_bubble[sink],data)
+                    G_new.add_edge(source_to_bubble[source],sink_to_bubble[sink],data=data)
 
                 if G.has_edge(sink,source):
-                    data = G.get_edge_data(sink,source)
+                    data = G.get_edge_data(sink,source)["data"]
                     data['orientation'] = 'EB'
-                    G_new.add_edge(sink_to_bubble[sink],source_to_bubble[source],data)
+                    G_new.add_edge(sink_to_bubble[sink],source_to_bubble[source],data=data)
 
 
     '''
@@ -504,206 +497,16 @@ def main():
         else:
             node[1]['type'] = 'bubble'
 
-
-    # print G_new.has_edge('k99_79977','k99_192814')
-    # in_bubble = {}
-    # valid_source_sink = []
-    # all_bubble_paths = {} #stores all heaviest paths in bubble
-    # source_and_sinks = {}
-    # '''
-    # Here, first validate each source sink pair. To do this, sort them with largest number of nodes in the
-    # biconnected component.
-    # '''
-    # #pair_list = sorted(pairmap, key=lambda k: len(pairmap[k]), reverse=True)
-
-    # # for key in pair_list:
-    # #     print pairmap[key]
-
-    # comp_to_id = {}
-    # id_to_comp = {}
-    # comp_to_pair = {}
-    # id_to_longest_path = {}
-    # comp2pairs = {}
-    # prev_comp = ''
-    # id = 1
-    # for key in pair_list:
-    #   comp = pairmap[key]
-    #   if comp[0] == prev_comp:
-    #       continue
-
-    #   comp_to_id[comp[0]] = str(id)
-    #   comp2pairs[str(id)] = []
-    #   id_to_comp[str(id)] = comp
-    #   comp_to_pair[str(id)] = []
-    #   id_to_longest_path[str(id)] = -1
-    #   id += 1
-    #   prev_comp = comp[0]
-
-    # for key in pair_list:
-    #   c = pairmap[key][0]
-    #   comp_id = comp_to_id[c]
-    #   comp_to_pair[comp_id].append(key)
-
-    # valid_comps = {}
-
-    # for key in pair_list:
-    #   contigs = key.split('$')
-    #   '''
-    #   First find the subgraph of bicomponent. Check if current source sink pair is longer that previously
-    #   validated source sink pair. If yes then only validate current source sink pair.
-    #   '''
-    #   subg = G.subgraph(pairmap[key])
-    #   comp_id = pairmap[key][0]
-    #   comp_id = comp_to_id[comp_id]
-    #   res = test_pair(G,contigs[0],contigs[1],pairmap[key])
-        
-    #   if res:
-            
-    #       cnt += 1
-    #       #validated[contigs[0]] = 1
-    #       source_and_sinks[contigs[0]] = 1
-    #       source_and_sinks[contigs[1]] = 1
-    #       #validated[contigs[1]] = 1
-    #       #subg = G.subgraph(comp)
-    #       valid_comps[comp_id] = 1
-            
-
-            
-    # source = {}
-    # sink = {}
-    # source_sink_to_comp = {}
-    # #print len(valid_comps)
-    # cnt = 0
-    # bubble_to_graph = {}
-    # for key in valid_comps:
-    #   pairs = comp_to_pair[key]
-    #   #print "Length of pairs = " + str(len(pairs))
-    #   subg = G.subgraph(id_to_comp[key])
-    #   if not nx.is_directed_acyclic_graph(subg):
-    #       subg = make_acyclic(subg)
-    #   if nx.is_directed_acyclic_graph(subg):
-
-    #       #print subg.nodes()
-    #       max_path = 0
-    #       max_pair = -1
-    #       #print pairs
-    #       for pair in pairs:
-    #           #print pair
-    #           pair1 = pair.split('$')
-    #           no_paths = no_of_paths(subg,pair1[0],pair1[1])
-    #           if no_paths > max_path:
-    #               max_path = no_paths
-    #               max_pair = pair
-
-    #       if max_pair != -1:
-    #           # print "max_path = " + str(max_path)
-    #           # print "max_pair = " + str(max_pair)
-    #           # paths = get_variants(subg,max_pair.split('$')[0],max_pair.split('$')[1])
-    #           # print paths
-    #           cnt += 1
-    #           bubble_to_graph[key] = subg
-    #           line = ''
-    #           for each in subg.nodes():
-    #               line += str(each)+'\t'
-    #           bub_output.write(line+'\n')
-    #           valid_source_sink.append(max_pair)
-    #           source[max_pair.split('$')[0]] = 1
-    #           sink[max_pair.split('$')[1]] = 1
-    #           source_sink_to_comp[max_pair.split('$')[0]] = key
-    #           source_sink_to_comp[max_pair.split('$')[1]] = key
-    #           for contig in id_to_comp[key]:
-    #               in_bubble[contig] = 1
-    #               validated[contig] = 1
-    #   # else:
-    #   #   subg = make_acyclic
-
-    # #print cnt
-
-    # '''
-    # Here, find now the new graph by collapsing bubbles
-    # TODO: Preserve node and edge attributes from the original non-collapsed graph
-    # '''
-    # #node to info map
-    # node_info = {}
-    # for node in G.nodes(data=True):
-    #   node_info[node[0]] = node[1] 
-    # G_new = nx.DiGraph()
-
-    # # print source
-    # # print sink
-    # # for each in source:
-    # #     print len(G.in_edges(each))
-
-    # # for each in sink:
-    # #     print len(G.out_edges(each))
-
-    # # print source
-    # # print sink
-    # for key in valid_comps:
-    #   G_new.add_node(str(key))
-    # for u,v,data in G.edges(data=True):
-    #   if u not in validated and v not in validated:
-    #       G_new.add_edge(u,v,data)
-
-    # for node in G.nodes():
-    #   if node not in source and node not in sink:
-    #       for each in source:
-    #           if G.has_edge(node,each):
-    #               #print 'here'
-    #               data = G.get_edge_data(node,each)
-    #               G_new.add_edge(node,source_sink_to_comp[each],data)
-    #       for each in sink:
-    #           if G.has_edge(each,node):
-    #               #print 'here'
-    #               data = G.get_edge_data(each,node)
-    #               G_new.add_edge(source_sink_to_comp[each],node,data)
-
-    # for s in source:
-    #   for t in sink:
-    #       if source_sink_to_comp[s] != source_sink_to_comp[t]:
-    #           if G.has_edge(s,t):
-    #               data = G.get_edge_data(s,t)
-    #               G_new.add_edge(source_sink_to_comp[s],source_sink_to_comp[t],data)
-    #           if G.has_edge(t,s):
-    #               data = G.get_edge_data(t,s)
-    #               G_new.add_edge(source_sink_to_comp[t],source_sink_to_comp[s],data)
-    
-    # for node in G_new.nodes(data=True):
-    #   if node[0] in node_info:
-    #       info = node_info[node[0]]
-    #       for each in info:
-    #           node[1][each] = info[each]
-    #       node[1]['type'] = 'contig'
-    #   else:
-    #       node[1]['type'] = 'bubble'
-            #node[1]['size'] = len(bubble_to_graph[node[0]].nodes())
-    # '''
-    # Output the simplified Graph
-    # '''
-    # # for node in G_new.nodes(data=True):
-    # #     #print node
-    # #     m = node[1]
-    # #     node[1]['color'] = colmap[node[0]]
-    # #nx.set_node_attribute(G_new,'color',colmap)
-    # print len(G_new.nodes())
-    # print len(G_new.edges())
-    # #nx.write_gexf(G_new,'simplified.gexf')
-    # #write_dot(G_new,'simplified.dot')
-    # nx.write_gml(G_new,'simplified.gml')
-
-    '''
-    In this simplified, for each weakly connected component, find out the heaviest linear path. If path
-    goes through the bubble, choose the heaviest path in the bubble and continue
-    '''
     alternative_contigs = [] #this stores all variants. Tag these as variants while writing to file
     primary_contigs = []
-    for subg in nx.weakly_connected_component_subgraphs(G_new):
+    for subg in nx.weakly_connected_components(G_new):
         #print subg.nodes()
         # print 'here'
         #First get all edges
+        subg = G_new.subgraph(subg)
         edges = subg.edges(data=True)
         #sort edges by weights
-        sorted_edges = sorted(edges,key = lambda tup: tup[2]['bsize'], reverse=True)
+        sorted_edges = sorted(edges,key = lambda tup: tup[2]['data']['bsize'], reverse=True)
         #print sorted_edges
         #create a new graph
         G_sorted = nx.Graph()
@@ -713,13 +516,13 @@ def main():
         for edge in sorted_edges:
             u = edge[0]
             v = edge[1]
-            data = edge[2]
+            data = edge[2]["data"]
             orientation  = data['orientation']
 
             u = u + '$' + orientation[0]
             v = v + '$' + orientation[1]
             if u not in  G_sorted.nodes() and v not in G_sorted.nodes():
-                G_sorted.add_edge(u,v,data)
+                G_sorted.add_edge(u,v,data=data)
                 nodes.add(u.split('$')[0])
                 nodes.add(v.split('$')[0])
         #add edges between B and E nodes of same contig
@@ -729,7 +532,8 @@ def main():
         #print len(G_sorted.edges())
         
         #now trace out all linear paths in this, each will be a scaffold
-        for small_subg in nx.connected_component_subgraphs(G_sorted):
+        for small_subg in nx.connected_components(G_sorted):
+            small_subg = G_sorted.subgraph(small_subg)
             #print small_subg.edges()
             p = []
             for node in small_subg.nodes():
