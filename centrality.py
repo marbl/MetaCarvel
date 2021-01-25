@@ -24,22 +24,23 @@ with open(args.length,'r') as f:
         if attrs[0] in G.nodes():
             contig_length[attrs[0]] = int(attrs[1])
 
-nx.set_node_attributes(G,'length',contig_length)
+nx.set_node_attributes(G, contig_length, 'length')
 #print contig_length
 repeat_nodes = {}
 
 def get_centrality(subg):
     centralities = nx.betweenness_centrality(subg)
-    mean = np.mean(centralities.values())
-    stdev = np.std(centralities.values())
+    mean = np.mean(list(centralities.values()))
+    stdev = np.std(list(centralities.values()))
     for node in centralities:
         if centralities[node] >= mean + 3*stdev:
             repeat_nodes[node] = centralities[node]
 
 def centrality_wrapper(graph):
     pool =  ThreadPool(cpus)
-    for subg in nx.connected_component_subgraphs(graph):
+    for subg in nx.connected_components(graph):
         #get_centrality(subg)
+        subg = graph.subgraph(subg) 
         if len(subg.nodes()) >= 50:
             result = pool.map(get_centrality,[subg])
     pool.close()
@@ -48,12 +49,12 @@ G_copy = G.copy()
 
 ofile = open(args.output,'w')
 
-for i in xrange(3):
+for i in range(3):
     centrality_wrapper(G_copy)
     for node in repeat_nodes:
         if G_copy.has_node(node):
             G_copy.remove_node(node)
-	    ofile.write(str(node)+'\t'+str(repeat_nodes[node])+'\n')
+        ofile.write(str(node)+'\t'+str(repeat_nodes[node])+'\n')
 
 
  

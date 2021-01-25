@@ -25,7 +25,7 @@ def find_tandem_repeats(G,to_write):
         sum += contig_coverage[key]
 
     avg = sum*1.0/len(contig_coverage)
-    print avg
+    print(avg)
 
     nodes = []
     for node in G.nodes():
@@ -51,7 +51,7 @@ def find_interspersed_repeats(G,to_write):
         sum += contig_coverage[key]
 
     avg = sum*1.0/len(contig_coverage)
-    print avg
+    print(avg)
 
     nodes = []
     for node in G.nodes():
@@ -71,7 +71,7 @@ def find_three_bubbles(G,to_write,seppairs):
         for line in f:
             attrs = line.split()
             if len(attrs) == 5:
-		ofile.write(line)
+                ofile.write(line)
 
 def find_four_bubbles(G,to_write,seppairs):
     explored = {}
@@ -80,15 +80,15 @@ def find_four_bubbles(G,to_write,seppairs):
         for line in f:
             attrs = line.split()
             if len(attrs) == 6:
-		ofile.write(line)
+                ofile.write(line)
 
 def find_complex_bubbles(G,to_write,seppairs):
     ofile = open(to_write,'w')
     with open(seppairs,'r') as f:
-	for line in f:
-		attrs = line.split()
-		if len(attrs) > 6:
-			ofile.write(line)
+        for line in f:
+            attrs = line.split()
+            if len(attrs) > 6:
+                ofile.write(line)
 
 
 def find_cycles(G,to_write):
@@ -112,7 +112,7 @@ def main():
     G = nx.read_gml(args.working_dir+'/oriented.gml')
 
     find_plasmids(G,args.working_dir+'/plasmids')
-    find_tandem_repeats(G,args.working_dir+'/tandem_repeats')
+    #find_tandem_repeats(G,args.working_dir+'/tandem_repeats')
     #find_interspersed_repeats(G,args.working_dir+'/interspersed_repeats')
     find_three_bubbles(G,args.working_dir+'/three_bubbles',args.working_dir+'/bubbles.txt')
     find_four_bubbles(G,args.working_dir+'/four_bubbles',args.working_dir+'/bubbles.txt')

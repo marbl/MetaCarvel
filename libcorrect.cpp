@@ -71,14 +71,14 @@ void parse_bed(string path)
 		}
 		else
 		{
-		    if(seen.find(read) == seen.end())
+			if(seen.find(read) == seen.end())
 		    {
 		    	first_in_pair[read] = rec;
-			seen[read] = true;
+				seen[read] = true;
 		    }
 		    else
 		    {
-			second_in_pair[read] = rec;
+				second_in_pair[read] = rec;
 		    }
 
 		}
@@ -220,28 +220,17 @@ int main(int argc, char* argv[])
     pr.add<string>("output",'o',"output file",true,"");
     pr.parse_check(argc,argv);
 
-    //ifstream linkfile(getCharExpr(pr.get<string>("lib_info")));
-    //getFastqSequences(getCharExpr(pr.get<string>("lib_info")));
-	//vector<SAMRecord> alignments = parseSAM(pr.get<string>("lib_info"));
-	get_contig_length(pr.get<string>("contig_file"));
-	//ifstream libfile(getCharExpr(pr.get<string>("lib_info")));
+    get_contig_length(pr.get<string>("contig_file"));
 	vector<LibRecord> libraries;
 	string line;
 	int threshold = pr.get<int>("length_cutoff");
-	// while(getline(libfile,line))
-	// {
-	// 	istringstream iss(line);
-	// 	string a,b,c,d,e;
-	// 	double mean, stdev, minimum, maximum;
-	// 	iss >> a >> b >> c >> d >> mean >> stdev >> minimum >> maximum >> e;
-	// 	LibRecord record(a,b,c,d,mean,stdev,minimum,maximum,e);
-	// 	libraries.push_back(record);
-	// }
 	parse_bed(pr.get<string>("alignment_info"));
 	vector<int> insert_sizes;
-	//iterate through all records and estimate library size
+	cerr<<"Size of First Map = "<<first_in_pair.size()<<endl;
+	cerr<<"Size of Second Map = "<<second_in_pair.size()<<endl;
 	
 	map<string,BedRecord> :: iterator it;
+	
 	for(it = first_in_pair.begin(); it != first_in_pair.end();++it)
 	{
 		string read = it->first;
@@ -257,7 +246,6 @@ int main(int argc, char* argv[])
 				}
 				contig2reads[first.contig] += 1;
 				int insert_size = get_insert_size(first.start, first.end, second.start, second.end);
-				//cout<<insert_size<<endl;
 				insert_sizes.push_back(insert_size);
 			}
 		}
@@ -266,9 +254,15 @@ int main(int argc, char* argv[])
 
 	double sum = std::accumulate(insert_sizes.begin(), insert_sizes.end(), 0.0);
 	double mean = sum / insert_sizes.size();
+	
+	cerr<<"Sum = "<<sum<<endl;
+    cerr<<"Size = "<<insert_sizes.size()<<endl;
 
-	double sq_sum = std::inner_product(insert_sizes.begin(), insert_sizes.end(), insert_sizes.begin(), 0.0);
-	double stdev = std::sqrt(sq_sum / insert_sizes.size() - mean * mean);
+    std::vector<double> diff(insert_sizes.size());
+	std::transform(insert_sizes.begin(), insert_sizes.end(), diff.begin(), std::bind2nd(std::minus<double>(), mean));
+	double sq_sum = std::inner_product(diff.begin(), diff.end(), diff.begin(), 0.0);
+	double stdev = std::sqrt(sq_sum / insert_sizes.size());
+	
 	cerr<<"Mean = "<<mean<<endl;
 	cerr<<"Stdev = "<<stdev<<endl;
 	//calculate coverage

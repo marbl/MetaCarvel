@@ -37,7 +37,7 @@ for node in G.nodes():
         if node in contig_coverage and neighs in contig_coverage:
             if contig_coverage[node] >= 2*contig_coverage[neighs]:
                     s_count += 1
-    skewed_edges[node] = s_count*1.0/len(G.neighbors(node))
+    skewed_edges[node] = s_count*1.0/len(list(G.neighbors(node)))
 
 #centralities
 centralities = {}
@@ -54,18 +54,18 @@ with open(sys.argv[5],'r') as f:
         contig_length[attrs[0]] = int(attrs[1])
 
 repeats = {}
-mean = np.mean(centralities.values())
-stdev = np.std(centralities.values())
+mean = np.mean(list(centralities.values()))
+stdev = np.std(list(centralities.values()))
 
 for contig in centralities:
-	repeats[contig] = 1
+    repeats[contig] = 1
 
-p_coverage = np.percentile(contig_coverage.values(),75)
-p_invalidated = np.percentile(contig2links.values(),75)
-p_degree = np.percentile(contig_degree.values(),75)
-p_skewed = np.percentile(skewed_edges.values(),75)
+p_coverage = np.percentile(list(contig_coverage.values()),75)
+p_invalidated = np.percentile(list(contig2links.values()),75)
+p_degree = np.percentile(list(contig_degree.values()),75)
+p_skewed = np.percentile(list(skewed_edges.values()),75)
 
-avg_coverage = np.mean(contig_coverage.values())
+avg_coverage = np.mean(list(contig_coverage.values()))
 other_repeats = {}
 coverage_outliers = {}
 links_outliers = {}
@@ -94,7 +94,7 @@ for contig in coverage_outliers:
 
 repeat_contigs = set()
 for key in repeats:
-	repeat_contigs.add(key)
+    repeat_contigs.add(key)
 
 for key in other_repeats:
     repeat_contigs.add(key)
@@ -118,9 +118,9 @@ with open(sys.argv[2],'r') as f:
                     repeat_contigs.add(attrs[2])
                 continue
             else:
-                print line.strip()
+                print(line.strip())
                 continue
-        print line.strip()
+        print(line.strip())
 
 ofile = open(sys.argv[6],'w')
 #pool =  ThreadPool(cpus)
