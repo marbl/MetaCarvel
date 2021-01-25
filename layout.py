@@ -449,12 +449,14 @@ def main():
         if node not in valid_sources and node not in valid_sink:
             for source in valid_sources:
                 if G.has_edge(node,source):
+
                     data = G.get_edge_data(node,source)
                     data['orientation'] = data['orientation'][0] + 'B'
                     G_new.add_edge(node,source_to_bubble[source],data=data)
 
             for sink in valid_sink:
                 if G.has_edge(sink,node):
+
                     data = G.get_edge_data(sink,node)
                     data['orientation'] = 'E' + data['orientation'][1]
 
@@ -471,11 +473,13 @@ def main():
         for sink in sink_to_bubble:
             if source_to_bubble[source] != sink_to_bubble[sink]:
                 if G.has_edge(source,sink):
+
                     data= G.get_edge_data(source,sink)
                     data['orientation'] = 'BE'
                     G_new.add_edge(source_to_bubble[source],sink_to_bubble[sink],data=data)
 
                 if G.has_edge(sink,source):
+
                     data = G.get_edge_data(sink,source)
                     data['orientation'] = 'EB'
                     G_new.add_edge(sink_to_bubble[sink],source_to_bubble[source],data=data)
@@ -603,6 +607,7 @@ def main():
                             alt_path = []
                             curr_path = alt_paths[i]
                             for each in curr_path:
+
                                 o_node = G._node
                                 if G._node[each]['orientation'] == 'FOW':
                                     alt_path.append(each+'$B')
