@@ -449,18 +449,20 @@ def main():
         if node not in valid_sources and node not in valid_sink:
             for source in valid_sources:
                 if G.has_edge(node,source):
-                    data = G.get_edge_data(node,source)["data"]
+
+                    data = G.get_edge_data(node,source)
                     data['orientation'] = data['orientation'][0] + 'B'
                     G_new.add_edge(node,source_to_bubble[source],data=data)
 
             for sink in valid_sink:
                 if G.has_edge(sink,node):
-                    data = G.get_edge_data(sink,node)["data"]
+
+                    data = G.get_edge_data(sink,node)
                     data['orientation'] = 'E' + data['orientation'][1]
 
                     G_new.add_edge(sink_to_bubble[sink],node, data=data)
                 # if G.has_edge(node,sink):
-                #   data = G.get_edge_data(node,sink)["data"]
+                #   data = G.get_edge_data(node,sink)
                 #   G_new.add_edge(node,sink_to_bubble[sink],data=data)
 
     '''
@@ -471,12 +473,14 @@ def main():
         for sink in sink_to_bubble:
             if source_to_bubble[source] != sink_to_bubble[sink]:
                 if G.has_edge(source,sink):
-                    data= G.get_edge_data(source,sink)["data"]
+
+                    data= G.get_edge_data(source,sink)
                     data['orientation'] = 'BE'
                     G_new.add_edge(source_to_bubble[source],sink_to_bubble[sink],data=data)
 
                 if G.has_edge(sink,source):
-                    data = G.get_edge_data(sink,source)["data"]
+
+                    data = G.get_edge_data(sink,source)
                     data['orientation'] = 'EB'
                     G_new.add_edge(sink_to_bubble[sink],source_to_bubble[source],data=data)
 
@@ -585,7 +589,7 @@ def main():
                     for each in heaviest:
                         #print 'appending heaviest'
                         # print each
-                        orient = G.node[each]['orientation']
+                        orient = G._node[each]['orientation']
                         if orient == 'FOW':
                             new_path.append(each+'$B')
                             new_path.append(each+'$E')
@@ -603,12 +607,13 @@ def main():
                             alt_path = []
                             curr_path = alt_paths[i]
                             for each in curr_path:
-                                o_node = G.node
-                                if G.node[each]['orientation'] == 'FOW':
+
+                                o_node = G._node
+                                if G._node[each]['orientation'] == 'FOW':
                                     alt_path.append(each+'$B')
                                     alt_path.append(each+'$E')
 
-                                if G.node[each]['orientation'] == 'REV':
+                                if G._node[each]['orientation'] == 'REV':
                                     alt_path.append(each+'$E')
                                     alt_path.append(each+'$B')
 
