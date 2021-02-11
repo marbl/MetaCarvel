@@ -2,12 +2,13 @@
 
 MetaCarvel is an updated version of previous metagenome scaffolder Bambus 2. To run MetaCarvel, you will need [Python 2.7.x](https://www.python.org/downloads/), [Samtools](http://samtools.sourceforge.net), [Bedtools](http://bedtools.readthedocs.io/en/latest/), [Networkx](https://networkx.github.io/)(Version < 1.11), [NumPy](http://www.numpy.org/),and [OGDF](http://amber-v7.cs.tu-dortmund.de/lib/exe/fetch.php/tech:ogdf-snapshot-2015-05-30.zip).
 
-You can install Networkx as described [here](https://pypi.org/project/networkx/1.10/).
+You can install Networkx as described [here](https://pypi.org/project/networkx/).
+MetCarvel can work with the latest NetworkX version 2.5
 Briefly, you need to run following:
 ```
-pip install networkx==1.10
+pip install numpy (tested with version 1.20)
+pip install networkx>=2.5
 ```
-If this doesn't work, you can download the source from [here](https://files.pythonhosted.org/packages/cb/fc/9b1c805b9abe249b9ce786d2ac9e6808d7776237d195365d50188a38dc30/networkx-1.10.tar.gz) and install from source.
 
 ## The detailed documentation and tutorial to install and run MetaCarvel can be found on [Wiki](https://github.com/marbl/MetaCarvel/wiki).
 
