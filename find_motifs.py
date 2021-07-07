@@ -6,7 +6,8 @@ contig_coverage = {}
 def find_plasmids(G,to_write):
     count = 0
     ofile = open(to_write,'w')
-    for subg in nx.weakly_connected_component_subgraphs(G):
+    for conn in nx.weakly_connected_components(G):
+        subg = nx.DiGraph(G.subgraph(conn))
         is_cyclic = True
         for node in subg.nodes():   
             if subg.in_degree(node) == 1 and subg.out_degree(node) == 1:
