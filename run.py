@@ -31,9 +31,6 @@ def main():
     version_id = int(version.split('.')[1])
     first = int(version.split('.')[0])
     print('Networkx ' + version + ' found', file=sys.stderr)
-   # if first != 1:
-   #    print(time.strftime("%c")+': Networkx should be 1.11 or earlier.. Terminating...\n', file=sys.stderr)
-   #    sys.exit(1)
     if not shutil.which('samtools'):
       print(time.strftime("%c")+': Samtools does not exist in PATH. Terminating....\n', file=sys.stderr)
       sys.exit(1)
