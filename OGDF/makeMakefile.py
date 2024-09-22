@@ -74,7 +74,8 @@ config = configparser.ConfigParser()
 print('Loading makeMakefile.config...')
 
 try:
-	config.readfp(open('makeMakefile.config'))  # TODO DeprecationWarning: This method will be removed in Python 3.12. Use 'parser.read_file()' instead.
+	with open('makeMakefile.config') as makefile_config_f:
+		config.read_file(makefile_config_f)
 except IOError:
 	bailout('makeMakefile.config not found')
 
