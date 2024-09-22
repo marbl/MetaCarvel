@@ -1,5 +1,6 @@
 #!/bin/bash
 
+set -euo pipefail
 
 #install OGDF
 cd OGDF
