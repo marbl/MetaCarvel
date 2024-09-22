@@ -1,4 +1,4 @@
-#!/usr/bin/env python2.7
+#!/usr/bin/env python3
 # Make Makefile
 #
 # October 2012
@@ -74,7 +74,8 @@ config = configparser.ConfigParser()
 print('Loading makeMakefile.config...')
 
 try:
-	config.readfp(open('makeMakefile.config'))
+	with open('makeMakefile.config') as makefile_config_f:
+		config.read_file(makefile_config_f)
 except IOError:
 	bailout('makeMakefile.config not found')
 
@@ -278,7 +279,7 @@ def Walk(curdir):
 					for v in versions:
 						# print target&depend: add full path spec, incl. version & ignore extra line
 						path = v.call() + '/' +fullname[:-len(name)]
-						makefile.write(path + targetAndDepend[:-1] + '\n')
+						makefile.write(path + targetAndDepend.decode()[:-1] + '\n')
 
 						# ensure folder
 						makefile.write('\t$(MKDIR) ' + v.call() + '/' + fullname[:-len(name)-1] + '\n')

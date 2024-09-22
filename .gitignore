@@ -1,0 +1,13 @@
+# generated files
+OGDF/Makefile
+OGDF/_release/
+OGDF/include/coin/config.h
+OGDF/include/ogdf/internal/config_autogen.h
+OGDF/ogdf.pc
+OGDF/test/test-release
+
+# binaries
+bundler
+libcorrect
+orientcontigs
+spqr
