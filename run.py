@@ -9,7 +9,7 @@ import time
 
 
 def main():
-    cwd=os.path.dirname(os.path.abspath(__file__))
+    cwd=Path(__file__).resolve().parent.absolute()
 
     parser = argparse.ArgumentParser(description="MetaCarvel: A scaffolding tool for metagenomic assemblies")
     parser.add_argument("-a","--assembly",help="assembled contigs",required=True)
@@ -91,7 +91,7 @@ def main():
         #print './libcorrect -l' + args.lib + ' -a' + args.dir+'/alignment.bed -d ' +args.dir+'/contig_length -o '+ args.dir+'/contig_links'
         try:
           subprocess.run([
-            cwd+"/libcorrect",
+            str(cwd / "libcorrect"),
             "-a",
             args.dir+"/alignment.bed",
             "-d",
@@ -115,7 +115,7 @@ def main():
     if os.path.exists(args.dir+'/bundled_links') == False:
         try:
           subprocess.run([
-            cwd+"/bundler",
+            str(cwd / "bundler"),
             "-l",
             str(contig_links),
             "-o",
@@ -142,7 +142,7 @@ def main():
         print(time.strftime("%c")+':Started finding and removing repeats', file=sys.stderr)
         try:
           subprocess.run([
-            cwd+"/orientcontigs",
+            str(cwd / "orientcontigs"),
             "-l",
             str(bundled_links),
             "-c",
@@ -161,7 +161,7 @@ def main():
         try:
           subprocess.run([
             "python",
-            cwd+"/centrality.py",
+            str(cwd / "centrality.py"),
             "-g",
             str(bundled_links),
             "-l",
@@ -177,7 +177,7 @@ def main():
           with open(bundled_links_filtered, "w") as bundled_links_filtered_f:
             subprocess.run([
               "python",
-              cwd+"/repeat_filter.py",
+              str(cwd / "repeat_filter.py"),
               str(contig_coverage),
               str(bundled_links),
               str(invalidated_counts),
@@ -194,7 +194,7 @@ def main():
     print(time.strftime("%c")+':Started orienting the contigs', file=sys.stderr)
     try:
       subprocess.run([
-        cwd+"/orientcontigs",
+        str(cwd / "orientcontigs"),
         "-l",
         str(bundled_links_filtered),
         "-c",
@@ -215,7 +215,7 @@ def main():
     seppairs = Path(args.dir) / "seppairs"
     try:
       subprocess.run([
-        cwd+"/spqr",
+        str(cwd / "spqr"),
         "-l",
         str(oriented_links),
         "-o",
@@ -232,7 +232,7 @@ def main():
       try:
         subprocess.run([
           "python",
-          cwd+"/layout.py",
+          str(cwd / "layout.py"),
           "-a",
           str(args.assembly),
           "-b",
@@ -257,7 +257,7 @@ def main():
       # created by collate.py here is the mgsc.db file.
       subprocess.run([
         "python",
-        cwd+"/MetagenomeScope/graph_collator/collate.py",
+        str(cwd / "MetagenomeScope/graph_collator/collate.py"),
         "-i",
         str(oriented_gml),
         "-w",
