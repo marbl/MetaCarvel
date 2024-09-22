@@ -12,14 +12,14 @@ def main():
     cwd=Path(__file__).resolve().parent.absolute()
 
     parser = argparse.ArgumentParser(description="MetaCarvel: A scaffolding tool for metagenomic assemblies")
-    parser.add_argument("-a","--assembly",help="assembled contigs",required=True)
-    parser.add_argument("-m","--mapping", help="mapping of read to contigs in bam format",required=True)
-    parser.add_argument("-d","--dir",help="output directory for results",default='out',required=True)
-    parser.add_argument("-r",'--repeats',help="To turn repeat detection on",default="true")
-    parser.add_argument("-k","--keep", help="Set this to keep temporary files in output directory",default=False)
-    parser.add_argument("-l","--length",help="Minimum length of contigs to consider for scaffolding in base pairs (bp)",default=500)
-    parser.add_argument("-b","--bsize",help="Minimum mate pair support between contigs to consider for scaffolding",default=3)
-    parser.add_argument("-v",'--visualization',help="Generate a .db file for the MetagenomeScope visualization tool",default=False)
+    parser.add_argument("-a","--assembly",type=Path,help="assembled contigs",required=True)
+    parser.add_argument("-m","--mapping", type=Path, help="mapping of read to contigs in bam format",required=True)
+    parser.add_argument("-d","--dir",type=Path,help="output directory for results",default='out',required=True)
+    parser.add_argument("-r",'--repeats',action=argparse.BooleanOptionalAction,help="To turn repeat detection on", default=True)
+    parser.add_argument("-k","--keep", action=argparse.BooleanOptionalAction, help="Set this to keep temporary files in output directory",default=False)
+    parser.add_argument("-l","--length", type=int, help="Minimum length of contigs to consider for scaffolding in base pairs (bp)",default=500)
+    parser.add_argument("-b","--bsize", type=int, help="Minimum mate pair support between contigs to consider for scaffolding",default=3)
+    parser.add_argument("-v",'--visualization', action=argparse.BooleanOptionalAction, help="Generate a .db file for the MetagenomeScope visualization tool", default=False)
 
     args = parser.parse_args()
     try:
@@ -42,12 +42,11 @@ def main():
       print(time.strftime("%c")+': Bedtools does not exist in PATH. Terminating....\n', file=sys.stderr)
       sys.exit(1)
 
-    if not os.path.exists(args.dir):
-        os.makedirs(args.dir)
+    args.dir.mkdir(parents=True, exist_ok=True)
     print(time.strftime("%c")+':Starting scaffolding..', file=sys.stderr)
 
 
-    alignment_bed = Path(args.dir) / "alignment.bed"
+    alignment_bed = args.dir / "alignment.bed"
     if not alignment_bed.exists():
         print("converting bam file to bed file", file=sys.stderr)
         try:
@@ -55,24 +54,29 @@ def main():
             subprocess.run([
               "bamToBed",
               "-i",
-              args.mapping,
+              str(args.mapping),
             ], stdout=alignment_bed_f, check=True)
           print('finished conversion', file=sys.stderr)
         except subprocess.CalledProcessError as err:
           alignment_bed.unlink()
           print(time.strftime("%c")+': Failed in coverting bam file to bed format, terminating scaffolding....\n' + str(err.output), file=sys.stderr)
           sys.exit(1)
+
+    assembly_idx = args.assembly.parent / (args.assembly.name + '.fai')
     try:
       subprocess.run([
         "samtools",
         "faidx",
-        args.assembly,
+        str(args.assembly),
+        "--fai-idx",
+        str(assembly_idx),
       ], check=True)
     except subprocess.CalledProcessError as err:
       print(str(err.output), file=sys.stderr)
       sys.exit(1)
 
-    with open(args.assembly+'.fai', "r", newline='') as f_in, open(args.dir+'/contig_length', "w", newline='') as f_out:
+    contig_length = args.dir / "contig_length"
+    with open(assembly_idx, "r", newline='') as f_in, open(contig_length, "w", newline='') as f_out:
       reader = csv.DictReader(f_in, fieldnames=["name", "length", "offset", "linebases", "linewidth"], delimiter="\t")
       writer = csv.DictWriter(f_out, fieldnames=["name", "length"], delimiter="\t")
       for row in reader:
@@ -84,16 +88,14 @@ def main():
     final_mapping = args.mapping
 
     print(time.strftime("%c") + ':Started generating links between contigs', file=sys.stderr)
-    contig_links = Path(args.dir) / "contig_links"
-    contig_length = Path(args.dir) / "contig_length"
-    contig_coverage = Path(args.dir) / "contig_coverage"
-    if os.path.exists(args.dir+'/contig_links') == False:
-        #print './libcorrect -l' + args.lib + ' -a' + args.dir+'/alignment.bed -d ' +args.dir+'/contig_length -o '+ args.dir+'/contig_links'
+    contig_links = args.dir / "contig_links"
+    contig_coverage = args.dir / "contig_coverage"
+    if not contig_links.exists():
         try:
           subprocess.run([
             str(cwd / "libcorrect"),
             "-a",
-            args.dir+"/alignment.bed",
+            str(alignment_bed),
             "-d",
             str(contig_length),
             "-o",
@@ -110,9 +112,9 @@ def main():
           sys.exit(1)
 
     print(time.strftime("%c")+':Started bulding of links between contigs', file=sys.stderr)
-    bundled_links = Path(args.dir) / "bundled_links"
-    bundled_graph = Path(args.dir) / "bundled_graph.gml"
-    if os.path.exists(args.dir+'/bundled_links') == False:
+    bundled_links = args.dir / "bundled_links"
+    bundled_graph = args.dir / "bundled_graph.gml"
+    if not bundled_links.exists():
         try:
           subprocess.run([
             str(cwd / "bundler"),
@@ -132,13 +134,13 @@ def main():
           print(time.strftime("%c")+': Failed to bundle links, terminating scaffolding....\n' + str(err.output), file=sys.stderr)
           sys.exit(1)
 
-    invalidated_counts = Path(args.dir) / "invalidated_counts"
-    high_centrality = Path(args.dir) / "high_centrality.txt"
-    bundled_links_filtered = Path(args.dir) / "bundled_links_filtered"
-    oriented_gml = Path(args.dir) / "oriented.gml"
-    oriented_links = Path(args.dir) / "oriented_links"
-    repeats = Path(args.dir) / "repeats"
-    if args.repeats == "true":
+    invalidated_counts = args.dir / "invalidated_counts"
+    high_centrality = args.dir / "high_centrality.txt"
+    bundled_links_filtered = args.dir / "bundled_links_filtered"
+    oriented_gml = args.dir / "oriented.gml"
+    oriented_links = args.dir / "oriented_links"
+    repeats = args.dir / "repeats"
+    if args.repeats:
         print(time.strftime("%c")+':Started finding and removing repeats', file=sys.stderr)
         try:
           subprocess.run([
@@ -212,7 +214,7 @@ def main():
       print(time.strftime("%c")+': Failed to Orient contigs, terminating scaffolding....', file=sys.stderr)
 
     print(time.strftime("%c")+':Started finding separation pairs', file=sys.stderr)
-    seppairs = Path(args.dir) / "seppairs"
+    seppairs = args.dir / "seppairs"
     try:
       subprocess.run([
         str(cwd / "spqr"),
@@ -227,8 +229,9 @@ def main():
       sys.exit(1)
 
     print(time.strftime("%c")+':Finding the layout of contigs', file=sys.stderr)
-    bubbles = Path(args.dir) / "bubbles.txt"
-    if os.path.exists(args.dir+'/scaffolds.fasta') == False:
+    bubbles = args.dir / "bubbles.txt"
+    scaffolds_fasta = args.dir / "scaffolds.fa"
+    if not scaffolds_fasta.exists():
       try:
         subprocess.run([
           "python",
@@ -242,17 +245,17 @@ def main():
           "-s",
           str(seppairs),
           "-o",
-          args.dir+"/scaffolds.fa",
+          str(scaffolds_fasta),
           "-f",
-          args.dir+"/scaffolds.agp",
+          str(args.dir / "scaffolds.agp"),
           "-e",
-          args.dir+"/scaffold_graph.gfa",
+          str(args.dir / "scaffold_graph.gfa"),
         ], check=True)
         print(time.strftime("%c")+':Final scaffolds written, Done!', file=sys.stderr)
       except subprocess.CalledProcessError as err:
         print(time.strftime("%c")+': Failed to generate scaffold sequences, terminating scaffolding....\n' + str(err.output), file=sys.stderr)
 
-    if args.visualization == "true":
+    if args.visualization:
       # Output the MetagenomeScope .db file directly to args.dir. The only file
       # created by collate.py here is the mgsc.db file.
       subprocess.run([
@@ -265,12 +268,12 @@ def main():
         str(bubbles),
         "-ubl",
         "-d",
-        args.dir,
+        str(args.dir),
         "-o",
         "mgsc",
       ], check=True)
 
-    if not args.keep == "true":
+    if not args.keep:
       for gen_f in [
         contig_length,
         contig_links,
